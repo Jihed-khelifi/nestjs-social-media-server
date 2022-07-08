@@ -11,11 +11,10 @@ export class UsersService {
     private usersRepository: MongoRepository<User>,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    await this.usersRepository.save({
+    return await this.usersRepository.save({
       ...createUserDto,
       isActive: true,
     });
-    return 'This action adds a new user';
   }
 
   findAll() {
@@ -24,6 +23,10 @@ export class UsersService {
 
   async findOne(id: ObjectID): Promise<User> {
     return this.usersRepository.findOneBy({ id });
+  }
+
+  async findByUsername(username: string): Promise<User> {
+    return this.usersRepository.findOneBy({ username });
   }
 
   async update(id: ObjectID, updateUserDto: UpdateUserDto): Promise<User> {

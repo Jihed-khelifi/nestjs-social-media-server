@@ -3,13 +3,20 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Query,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
+import { EmailService } from './email.service';
+
+import { ObjectId } from 'mongodb';
 
 @Controller()
 export class ActivationController {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private emailService: EmailService,
+  ) {}
   @Get('verify-account')
   async verifyAccount(@Query() query) {
     if (query.activationKey) {
@@ -37,5 +44,11 @@ export class ActivationController {
               <h1>Account Verified</h1>
               <p>Congratulations, your account is verified. Now you can login to the app.</p>
             </div>`;
+  }
+  @Get('get-activation-email/:id')
+  async getActivationEmail(@Param('id') id: string) {
+    console.error(id);
+    const user = await this.userService.findOne(new ObjectId(id));
+    await this.emailService.sendActivationEmail(user);
   }
 }

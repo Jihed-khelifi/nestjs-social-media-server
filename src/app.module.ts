@@ -14,7 +14,7 @@ import { EmailsModule } from './emails/emails.module';
       url: process.env.MONGODB_CONNECTION_STRING,
       database: 'continuem',
       entities: [User],
-      ssl: false,
+      ssl: true,
       useUnifiedTopology: true,
       useNewUrlParser: true,
     }),

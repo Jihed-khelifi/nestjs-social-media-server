@@ -27,7 +27,7 @@ export class UsersService {
       activationKey: randomstring.generate(15),
       isActive: false,
     });
-    // await this.emailService.sendActivationEmail(user);
+    await this.emailService.sendActivationEmail(user);
     return user;
   }
 

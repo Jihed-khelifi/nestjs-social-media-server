@@ -31,6 +31,7 @@ export class ActivationController {
       } else {
         if (user.isActive) {
           return `<div>
+                  <script>window.location.replace("continuem://AccountActivated");</script>
               <h1>Account Already Verified</h1>
               <p>Your account is already verified. Try login to the application.</p>
             </div>`;
@@ -42,6 +43,7 @@ export class ActivationController {
     }
     return `<div>
               <h1>Account Verified</h1>
+              <script>window.location.replace("continuem://AccountActivated");</script>
               <p>Congratulations, your account is verified. Now you can login to the app.</p>
             </div>`;
   }

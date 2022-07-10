@@ -10,7 +10,7 @@ export class EmailService {
   }
   async sendActivationEmail(user) {
     if (user && !user.isActive) {
-      const link = `https://728a-122-173-31-196.in.ngrok.io/api/verify-account?activationKey=${user.activationKey}`;
+      const link = `${process.env.API_URL}/verify-account?activationKey=${user.activationKey}`;
       const finalHtml = await this.getInterpolatedEmailContent('welcome.html', {
         link,
       });

@@ -21,6 +21,9 @@ export class AuthService {
 
   async login(user: User) {
     const payload = { email: user.email, sub: user.id };
+    if (!user.isActive) {
+      await this.usersService.sendOtp(user);
+    }
     return {
       access_token: this.jwtService.sign(payload),
       isActive: user.isActive,

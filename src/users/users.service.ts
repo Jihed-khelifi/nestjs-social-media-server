@@ -27,15 +27,16 @@ export class UsersService {
     }
     const user = await this.usersRepository.save({
       ...createUserDto,
-      activationKey: randomstring.generate(15),
       isActive: false,
     });
+    await this.sendOtp(user);
+    return this.authService.login(user);
+  }
+  async sendOtp(user) {
     const otp = randomstring.generate({length: 6, charset: 'numeric'});
     await this.emailService.sendActivationEmail(user, otp);
     await this.usersRepository.update(user.id, {otp, otpSentAt: new Date()});
-    return this.authService.login(user);
   }
-
   findAll() {
     return this.usersRepository.find();
   }

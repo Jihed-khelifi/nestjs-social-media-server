@@ -48,8 +48,6 @@ export class ActivationController {
   @Get('get-activation-email/:id')
   async getActivationEmail(@Param('id') id: string) {
     const user = await this.userService.findOne(new ObjectId(id));
-    const otp = randomstring.generate({length: 6, charset: 'numeric'});
-    await this.userService.update(user.id, {otp, otpSentAt: new Date()})
-    await this.emailService.sendActivationEmail(user, otp);
+    await this.userService.sendOtp(user)
   }
 }

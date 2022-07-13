@@ -12,12 +12,6 @@ export class AuthService {
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(username);
-    if (user && !user.isActive) {
-      throw new HttpException(
-        'Please verify your email first.',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
     if (user && user.password === pass) {
       return this.login(user);
     }
@@ -28,6 +22,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
+      isActive: user.isActive,
       userName: user.name,
       email: user.email,
       userId: user.id,

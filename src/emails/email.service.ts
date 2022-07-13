@@ -8,11 +8,10 @@ export class EmailService {
   constructor() {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   }
-  async sendActivationEmail(user) {
+  async sendActivationEmail(user, otp) {
     if (user && !user.isActive) {
-      const link = `${process.env.API_URL}/verify-account?activationKey=${user.activationKey}`;
       const finalHtml = await this.getInterpolatedEmailContent('welcome.html', {
-        link,
+        otp,
       });
       const msg = {
         to: user.email,

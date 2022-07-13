@@ -1,14 +1,14 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
-  Param,
-  Query,
+  Param, Post,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { EmailService } from './email.service';
-
+import * as randomstring from 'randomstring';
 import { ObjectId } from 'mongodb';
 
 @Controller()
@@ -17,40 +17,39 @@ export class ActivationController {
     private userService: UsersService,
     private emailService: EmailService,
   ) {}
-  @Get('verify-account')
-  async verifyAccount(@Query() query) {
-    if (query.activationKey) {
-      const user = await this.userService.findByActivationKey(
-        query.activationKey,
+  @Post('verify-account')
+  async verifyAccount(@Body() body: {otp: string, userId: string}) {
+    if (body.otp) {
+      const user = await this.userService.findOne(
+        new ObjectId(body.userId),
       );
       if (!user) {
         throw new HttpException(
-          'Invalid Activation Key',
+          'Invalid User Id',
           HttpStatus.UNAUTHORIZED,
         );
       } else {
         if (user.isActive) {
-          return `<div>
-                  <script>window.location.replace("continuem://AccountActivated");</script>
-              <h1>Account Already Verified</h1>
-              <p>Your account is already verified. Try login to the application.</p>
-            </div>`;
+          return {
+            userActivated: true,
+            error: false
+          }
         }
         await this.userService.activateUser(user.id);
+        return {
+          userActivated: true,
+          error: false
+        }
       }
     } else {
       throw new HttpException('Invalid Request', HttpStatus.UNAUTHORIZED);
     }
-    return `<div>
-              <h1>Account Verified</h1>
-              <script>window.location.replace("continuem://AccountActivated");</script>
-              <p>Congratulations, your account is verified. Now you can login to the app.</p>
-            </div>`;
   }
   @Get('get-activation-email/:id')
   async getActivationEmail(@Param('id') id: string) {
-    console.error(id);
     const user = await this.userService.findOne(new ObjectId(id));
-    await this.emailService.sendActivationEmail(user);
+    const otp = randomstring.generate({length: 6, charset: 'numeric'});
+    await this.userService.update(user.id, {otp, otpSentAt: new Date()})
+    await this.emailService.sendActivationEmail(user, otp);
   }
 }

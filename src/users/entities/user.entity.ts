@@ -18,6 +18,12 @@ export class User {
   password: string;
 
   @Column()
+  otp: string;
+
+  @Column({ type: 'timestamp', nullable: true  })
+  otpSentAt?: Date;
+
+  @Column()
   activationKey: string;
 
   @Column({ default: true })

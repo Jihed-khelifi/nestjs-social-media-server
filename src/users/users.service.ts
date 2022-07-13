@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { MongoRepository, ObjectID } from 'typeorm';
+import { MongoRepository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as dotEnv from 'dotenv';
 import * as randomstring from 'randomstring';
 import { EmailService } from 'src/emails/email.service';
+import { ObjectId } from 'mongodb';
 dotEnv.config();
 
 @Injectable()
@@ -27,7 +28,9 @@ export class UsersService {
       activationKey: randomstring.generate(15),
       isActive: false,
     });
-    await this.emailService.sendActivationEmail(user);
+    const otp = randomstring.generate({length: 6, charset: 'numeric'});
+    await this.emailService.sendActivationEmail(user, otp);
+    await this.usersRepository.update(user.id, {otp, otpSentAt: new Date()});
     return user;
   }
 
@@ -35,8 +38,8 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  async findOne(id: ObjectID): Promise<User> {
-    return this.usersRepository.findOneBy({ id });
+  async findOne(id: ObjectId): Promise<User> {
+    return this.usersRepository.findOneById(id);
   }
 
   async findByUsername(username: string): Promise<User> {
@@ -51,17 +54,17 @@ export class UsersService {
     });
   }
 
-  async update(id: ObjectID, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: ObjectId, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return user;
   }
-  async activateUser(id: ObjectID) {
+  async activateUser(id: ObjectId) {
     const user = await this.usersRepository.findOneBy({ id });
     await this.usersRepository.update({ id }, { isActive: true });
     return user;
   }
-  async remove(id: ObjectID): Promise<User> {
+  async remove(id: ObjectId): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     await this.usersRepository.delete({ id });
     return user;

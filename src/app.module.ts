@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { EmailsModule } from './emails/emails.module';
+import { EmotionsModule } from './emotions/emotions.module';
+import {Emotion} from "./emotions/entities/emotion.entity";
 
 @Module({
   imports: [
@@ -13,11 +15,12 @@ import { EmailsModule } from './emails/emails.module';
       type: 'mongodb',
       url: process.env.MONGODB_CONNECTION_STRING,
       database: 'continuem',
-      entities: [User],
+      entities: [User, Emotion],
       ssl: true,
       useUnifiedTopology: true,
       useNewUrlParser: true,
     }),
+    EmotionsModule,
     UsersModule,
     AuthModule,
     EmailsModule,

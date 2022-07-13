@@ -8,6 +8,7 @@ import * as dotEnv from 'dotenv';
 import * as randomstring from 'randomstring';
 import { EmailService } from 'src/emails/email.service';
 import { ObjectId } from 'mongodb';
+import {AuthService} from "../auth/auth.service";
 dotEnv.config();
 
 @Injectable()
@@ -16,6 +17,7 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: MongoRepository<User>,
     private emailService: EmailService,
+    private authService: AuthService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     const userByUsername = await this.findByUsername(createUserDto.username);
@@ -31,7 +33,7 @@ export class UsersService {
     const otp = randomstring.generate({length: 6, charset: 'numeric'});
     await this.emailService.sendActivationEmail(user, otp);
     await this.usersRepository.update(user.id, {otp, otpSentAt: new Date()});
-    return user;
+    return this.authService.login(user);
   }
 
   findAll() {

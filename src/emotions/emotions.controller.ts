@@ -1,34 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { EmotionsService } from './emotions.service';
-import { CreateEmotionDto } from './dto/create-emotion.dto';
-import { UpdateEmotionDto } from './dto/update-emotion.dto';
 
 @Controller('emotions')
 export class EmotionsController {
   constructor(private readonly emotionsService: EmotionsService) {}
-
-  @Post()
-  create(@Body() createEmotionDto: CreateEmotionDto) {
-    return this.emotionsService.create(createEmotionDto);
-  }
-
   @Get()
   findAll() {
-    return this.emotionsService.findAll();
+    return this.emotionsService.aggregateByType();
   }
-
   @Get(':type')
   findByType(@Param('type') type: string) {
     return this.emotionsService.findByType(type);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmotionDto: UpdateEmotionDto) {
-    return this.emotionsService.update(+id, updateEmotionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.emotionsService.remove(+id);
   }
 }

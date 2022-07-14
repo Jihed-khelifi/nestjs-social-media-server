@@ -19,7 +19,7 @@ export class EmotionsService {
                   emotions : { $addToSet: '$title' }
               }
           },
-          { $project: { "_id": 1, "emotions": 1 } }
+          { $project: { "_id": 0, type: '$_id', "emotions": 1 } }
       ]).toArray()
     }
 }

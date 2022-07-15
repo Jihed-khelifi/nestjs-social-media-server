@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { EmailsModule } from './emails/emails.module';
 import { EmotionsModule } from './emotions/emotions.module';
 import {Emotion} from "./emotions/entities/emotion.entity";
+import {CategoryModule} from "./categories/categories.module";
+import {Category} from "./categories/entities/category.entity";
 
 @Module({
   imports: [
@@ -15,12 +17,13 @@ import {Emotion} from "./emotions/entities/emotion.entity";
       type: 'mongodb',
       url: process.env.MONGODB_CONNECTION_STRING,
       database: 'continuem',
-      entities: [User, Emotion],
+      entities: [User, Emotion, Category],
       ssl: true,
       useUnifiedTopology: true,
       useNewUrlParser: true,
     }),
     EmotionsModule,
+    CategoryModule,
     UsersModule,
     AuthModule,
     EmailsModule,

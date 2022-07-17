@@ -10,6 +10,8 @@ import { EmotionsModule } from './emotions/emotions.module';
 import {Emotion} from "./emotions/entities/emotion.entity";
 import {CategoryModule} from "./categories/categories.module";
 import {Category} from "./categories/entities/category.entity";
+import { JournalsModule } from './journals/journals.module';
+import {Journal} from "./journals/entities/journal.entity";
 
 @Module({
   imports: [
@@ -17,11 +19,12 @@ import {Category} from "./categories/entities/category.entity";
       type: 'mongodb',
       url: process.env.MONGODB_CONNECTION_STRING,
       database: 'continuem',
-      entities: [User, Emotion, Category],
+      entities: [User, Emotion, Category, Journal],
       ssl: true,
       useUnifiedTopology: true,
       useNewUrlParser: true,
     }),
+    JournalsModule,
     EmotionsModule,
     CategoryModule,
     UsersModule,

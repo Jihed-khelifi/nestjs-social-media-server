@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Request, UseGuards} from '@nestjs/common';
+import {Controller, Get, Post, Body, Request, UseGuards, Param} from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
@@ -18,5 +18,14 @@ export class JournalsController {
   @Get()
   findAll(@Request() req) {
     return this.journalsService.findAll(req.user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get(':type')
+  getMyAllDataByDate(@Param('type') type: string, @Request() req) {
+    let user = null;
+    if (type === 'mine') {
+      user = req.user;
+    }
+    return this.journalsService.aggregateByDate(user);
   }
 }

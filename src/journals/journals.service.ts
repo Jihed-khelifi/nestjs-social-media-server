@@ -5,6 +5,7 @@ import {MongoRepository} from "typeorm";
 import {Journal} from "./entities/journal.entity";
 import {User} from "../users/entities/user.entity";
 import {ObjectId} from 'mongodb';
+import {UpdateJournalDto} from "./dto/update-journal.dto";
 
 @Injectable()
 export class JournalsService {
@@ -13,6 +14,10 @@ export class JournalsService {
 
     create(createJournalDto: CreateJournalDto) {
         return this.journalMongoRepository.save(createJournalDto);
+    }
+
+    update(updateJournalDto: UpdateJournalDto) {
+        return this.journalMongoRepository.update(new ObjectId(updateJournalDto.id), {...updateJournalDto});
     }
 
     findAll(user: User) {

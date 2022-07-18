@@ -1,8 +1,9 @@
-import {Controller, Get, Post, Body, Request, UseGuards, Param} from '@nestjs/common';
+import {Controller, Get, Post, Body, Request, UseGuards, Param, Put} from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { ObjectId } from 'mongodb';
+import {UpdateJournalDto} from "./dto/update-journal.dto";
 
 @Controller('journals')
 export class JournalsController {
@@ -13,6 +14,11 @@ export class JournalsController {
   create(@Request() req, @Body() createJournalDto: CreateJournalDto) {
     createJournalDto.createdBy = new ObjectId(req.user.id);
     return this.journalsService.create(createJournalDto);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put()
+  update(@Request() req, @Body() updateJournalDto: UpdateJournalDto) {
+    return this.journalsService.update(updateJournalDto);
   }
   @UseGuards(JwtAuthGuard)
   @Get()

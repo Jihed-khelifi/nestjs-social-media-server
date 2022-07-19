@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Request, UseGuards, Param, Put} from '@nestjs/common';
+import {Controller, Get, Post, Body, Request, UseGuards, Param, Put, Delete} from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
@@ -33,5 +33,10 @@ export class JournalsController {
       user = req.user;
     }
     return this.journalsService.aggregateByDate(user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  deleteJournal(@Param('id') id: string, @Request() req) {
+    return this.journalsService.delete(id, req.user);
   }
 }

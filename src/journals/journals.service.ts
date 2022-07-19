@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, Injectable} from '@nestjs/common';
 import {CreateJournalDto} from './dto/create-journal.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {MongoRepository} from "typeorm";
@@ -22,6 +22,15 @@ export class JournalsService {
 
     findAll(user: User) {
         return this.journalMongoRepository.findBy({createdBy: new ObjectId(user.id)});
+    }
+    async delete(id, user: User) {
+        const journal = await this.journalMongoRepository.findOne(id);
+        if (journal) {
+            await this.journalMongoRepository.delete({id: new ObjectId(id)});
+        } else {
+            throw new HttpException('Not found', 404);
+        }
+        return journal;
     }
 
     async aggregateByDate(user?: any) {

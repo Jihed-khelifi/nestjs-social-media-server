@@ -21,6 +21,9 @@ export class User {
   otp: string;
 
   @Column({ type: 'timestamp', nullable: true  })
+  dob?: Date;
+
+  @Column({ type: 'timestamp', nullable: true  })
   otpSentAt?: Date;
 
   @Column()

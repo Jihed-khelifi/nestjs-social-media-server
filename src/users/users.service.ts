@@ -9,6 +9,7 @@ import * as randomstring from 'randomstring';
 import { EmailService } from 'src/emails/email.service';
 import { ObjectId } from 'mongodb';
 import {AuthService} from "../auth/auth.service";
+import {UserDobDto} from "./dto/user-dob.dto";
 dotEnv.config();
 
 @Injectable()
@@ -56,20 +57,14 @@ export class UsersService {
       email,
     });
   }
-
-  async update(id: ObjectId, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ id });
+  async updateDob(id: ObjectId, updateUserDto: UserDobDto): Promise<User> {
+    const user = await this.usersRepository.findOneById(id);
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return user;
   }
   async activateUser(id: ObjectId) {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOneById(id);
     await this.usersRepository.update({ id }, { isActive: true });
-    return user;
-  }
-  async remove(id: ObjectId): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ id });
-    await this.usersRepository.delete({ id });
     return user;
   }
 }

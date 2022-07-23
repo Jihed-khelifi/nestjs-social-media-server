@@ -1,15 +1,15 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { MongoRepository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {CreateUserDto} from './dto/create-user.dto';
+import {MongoRepository} from 'typeorm';
+import {User} from './entities/user.entity';
+import {InjectRepository} from '@nestjs/typeorm';
 import * as dotEnv from 'dotenv';
 import * as randomstring from 'randomstring';
-import { EmailService } from 'src/emails/email.service';
-import { ObjectId } from 'mongodb';
+import {EmailService} from 'src/emails/email.service';
+import {ObjectId} from 'mongodb';
 import {AuthService} from "../auth/auth.service";
 import {UserDobDto} from "./dto/user-dob.dto";
+
 dotEnv.config();
 
 @Injectable()
@@ -58,9 +58,8 @@ export class UsersService {
     });
   }
   async updateDob(id: ObjectId, updateUserDto: UserDobDto): Promise<User> {
-    const user = await this.usersRepository.findOneById(id);
     await this.usersRepository.update({ id }, { ...updateUserDto });
-    return user;
+    return await this.usersRepository.findOneById(id);
   }
   async activateUser(id: ObjectId) {
     const user = await this.usersRepository.findOneById(id);

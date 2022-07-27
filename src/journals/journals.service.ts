@@ -23,6 +23,9 @@ export class JournalsService {
     findAll(user: User) {
         return this.journalMongoRepository.findBy({createdBy: new ObjectId(user.id)});
     }
+    countPublicPosts(user: User) {
+        return this.journalMongoRepository.count({createdBy: new ObjectId(user.id), type: 'public'});
+    }
     async delete(id, user: User) {
         const journal = await this.journalMongoRepository.findOne(id);
         if (journal) {

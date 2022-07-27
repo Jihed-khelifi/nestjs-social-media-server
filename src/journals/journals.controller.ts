@@ -26,6 +26,11 @@ export class JournalsController {
     return this.journalsService.findAll(req.user);
   }
   @UseGuards(JwtAuthGuard)
+  @Get('count/public')
+  countPublicPosts(@Request() req) {
+    return this.journalsService.countPublicPosts(req.user);
+  }
+  @UseGuards(JwtAuthGuard)
   @Get(':type')
   getMyAllDataByDate(@Param('type') type: string, @Request() req) {
     let user = null;

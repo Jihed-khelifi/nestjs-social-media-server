@@ -76,6 +76,27 @@ export class JournalsService {
                 }
             },
             {$unwind: '$user'},
+            {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'userId',
+                                foreignField: '_id',
+                                as: 'user'
+                            }
+                        },
+                        {$unwind: '$user'},
+                        {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+                    ],
+                    as: 'comments'
+                }
+            },
             {
                 $group: {
                     _id: '$date',
@@ -88,6 +109,7 @@ export class JournalsService {
                             category: "$category",
                             createdBy: "$createdBy",
                             user: "$user",
+                            comments: "$comments",
                             createdAt: "$createdAt"
                         }
                     },

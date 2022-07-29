@@ -12,6 +12,8 @@ import {CategoryModule} from "./categories/categories.module";
 import {Category} from "./categories/entities/category.entity";
 import { JournalsModule } from './journals/journals.module';
 import {Journal} from "./journals/entities/journal.entity";
+import {CommentsModule} from "./comments/comments.module";
+import {CommentEntity} from "./comments/entities/comment.entity";
 
 @Module({
   imports: [
@@ -19,11 +21,12 @@ import {Journal} from "./journals/entities/journal.entity";
       type: 'mongodb',
       url: process.env.MONGODB_CONNECTION_STRING,
       database: 'continuem',
-      entities: [User, Emotion, Category, Journal],
+      entities: [User, Emotion, Category, Journal, CommentEntity],
       ssl: true,
       useUnifiedTopology: true,
       useNewUrlParser: true,
     }),
+    CommentsModule,
     JournalsModule,
     EmotionsModule,
     CategoryModule,

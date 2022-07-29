@@ -93,6 +93,7 @@ export class JournalsService {
                         },
                         {$unwind: '$user'},
                         {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+                        { $sort : { createdAt : -1 } }
                     ],
                     as: 'comments'
                 }

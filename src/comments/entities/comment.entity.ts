@@ -1,4 +1,4 @@
-import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
+import {Entity, Column, ObjectIdColumn, ObjectID, CreateDateColumn} from 'typeorm';
 
 @Entity('comments')
 export class CommentEntity {
@@ -13,4 +13,7 @@ export class CommentEntity {
 
     @Column()
     comment: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
 }

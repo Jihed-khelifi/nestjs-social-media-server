@@ -36,7 +36,48 @@ export class JournalsService {
         return journal;
     }
 
-    async aggregateByDate(user?: any) {
+    async getSinglePost(postId) {
+        const matchQuery = {
+            $match: {
+                _id: new ObjectId(postId)
+            }
+        };
+        return this.journalMongoRepository.aggregate([
+            {...matchQuery},
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createdBy',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {$unwind: '$user'},
+            {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'userId',
+                                foreignField: '_id',
+                                as: 'user'
+                            }
+                        },
+                        {$unwind: '$user'},
+                        {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+                        { $sort : { createdAt : -1 } }
+                    ],
+                    as: 'comments'
+                }
+            },
+        ]).toArray();
+    }
+    async aggregateByDate(user?: any, postId?) {
         const matchQuery = {
             $match: {},
         };
@@ -47,6 +88,12 @@ export class JournalsService {
         } else {
             matchQuery.$match = {
                 type: 'public',
+            }
+        }
+        if (postId) {
+            matchQuery.$match = {
+                ...matchQuery.$match,
+                _id: new ObjectId(postId)
             }
         }
         return this.journalMongoRepository.aggregate([

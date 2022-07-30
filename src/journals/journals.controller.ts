@@ -26,6 +26,11 @@ export class JournalsController {
     return this.journalsService.findAll(req.user);
   }
   @UseGuards(JwtAuthGuard)
+  @Get('getSingle/:postId')
+  getPostById(@Param('postId') postId: string) {
+    return this.journalsService.getSinglePost(postId);
+  }
+  @UseGuards(JwtAuthGuard)
   @Get('count/public')
   countPublicPosts(@Request() req) {
     return this.journalsService.countPublicPosts(req.user);

@@ -9,10 +9,13 @@ import { ObjectId } from 'mongodb';
 export class CommentsService {
     constructor(@InjectRepository(CommentEntity) private commentMongoRepository: MongoRepository<CommentEntity>) {}
     async createComment(commentDto: CreateCommentDto, userId) {
-        const data = {
+        const data: any = {
             comment: commentDto.comment,
             postId: new ObjectId(commentDto.postId),
             userId: new ObjectId(userId)
+        }
+        if (commentDto.commentId) {
+            data.commentId = new ObjectId(commentDto.commentId);
         }
         return this.commentMongoRepository.save(data);
     }

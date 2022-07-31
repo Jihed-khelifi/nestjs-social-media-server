@@ -11,6 +11,9 @@ export class CommentEntity {
     @ObjectIdColumn()
     userId: ObjectID;
 
+    @ObjectIdColumn()
+    commentId: ObjectID;
+
     @Column()
     comment: string;
 

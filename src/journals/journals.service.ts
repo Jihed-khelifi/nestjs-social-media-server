@@ -70,6 +70,18 @@ export class JournalsService {
                                 from: "comments",
                                 localField: "_id",
                                 foreignField: "commentId",
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: 'users',
+                                            localField: 'userId',
+                                            foreignField: '_id',
+                                            as: 'user'
+                                        }
+                                    },
+                                    {$unwind: '$user'},
+                                    {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+                                ],
                                 as: "replies"
                             }
                         },

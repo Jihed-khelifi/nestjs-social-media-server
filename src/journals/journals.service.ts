@@ -61,6 +61,19 @@ export class JournalsService {
                     foreignField: 'postId',
                     pipeline: [
                         {
+                            $match: {
+                                commentId: null
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "comments",
+                                localField: "_id",
+                                foreignField: "commentId",
+                                as: "replies"
+                            }
+                        },
+                        {
                             $lookup: {
                                 from: 'users',
                                 localField: 'userId',

@@ -240,6 +240,23 @@ export class JournalsService {
                                             from: 'users',
                                             localField: 'userId',
                                             foreignField: '_id',
+                                            pipeline: [
+                                                {
+                                                    $lookup: {
+                                                        from: 'journals',
+                                                        localField: '_id',
+                                                        foreignField: 'createdBy',
+                                                        pipeline: [
+                                                            {$sort: {createdAt: -1}},
+                                                            {
+                                                                "$limit": 1
+                                                            }
+                                                        ],
+                                                        as: 'last_journal'
+                                                    }
+                                                },
+                                                {$unwind: '$last_journal'},
+                                            ],
                                             as: 'user'
                                         }
                                     },
@@ -248,11 +265,11 @@ export class JournalsService {
                                         $project: {
                                             "user.password": 0,
                                             "user.activationKey": 0,
-                                            "user.otp": 0,
+                                            "user.isActive": 0,
                                             "user.otpSentAt": 0,
-                                            "user.isActive": 0
+                                            "user.otp": 0,
                                         }
-                                    },
+                                    }
                                 ],
                                 as: "replies"
                             }
@@ -262,6 +279,23 @@ export class JournalsService {
                                 from: 'users',
                                 localField: 'userId',
                                 foreignField: '_id',
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: 'journals',
+                                            localField: '_id',
+                                            foreignField: 'createdBy',
+                                            pipeline: [
+                                                {$sort: {createdAt: -1}},
+                                                {
+                                                    "$limit": 1
+                                                }
+                                            ],
+                                            as: 'last_journal'
+                                        }
+                                    },
+                                    {$unwind: '$last_journal'},
+                                ],
                                 as: 'user'
                             }
                         },

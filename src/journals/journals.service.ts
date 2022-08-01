@@ -23,9 +23,11 @@ export class JournalsService {
     findAll(user: User) {
         return this.journalMongoRepository.findBy({createdBy: new ObjectId(user.id)});
     }
+
     countPublicPosts(user: User) {
         return this.journalMongoRepository.count({createdBy: new ObjectId(user.id), type: 'public'});
     }
+
     async delete(id, user: User) {
         const journal = await this.journalMongoRepository.findOne(id);
         if (journal) {
@@ -53,7 +55,15 @@ export class JournalsService {
                 }
             },
             {$unwind: '$user'},
-            {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+            {
+                $project: {
+                    "user.password": 0,
+                    "user.activationKey": 0,
+                    "user.otp": 0,
+                    "user.otpSentAt": 0,
+                    "user.isActive": 0
+                }
+            },
             {
                 $lookup: {
                     from: 'comments',
@@ -76,11 +86,33 @@ export class JournalsService {
                                             from: 'users',
                                             localField: 'userId',
                                             foreignField: '_id',
+                                            pipeline: [
+                                                {
+                                                    $lookup: {
+                                                        from: 'journals',
+                                                        localField: '_id',
+                                                        foreignField: 'createdBy',
+                                                        pipeline: [
+                                                            {$sort: {createdAt: -1}}
+                                                        ],
+                                                        as: 'last_journal'
+                                                    }
+                                                },
+                                                {$unwind: '$last_journal'},
+                                            ],
                                             as: 'user'
                                         }
                                     },
                                     {$unwind: '$user'},
-                                    {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+                                    {
+                                        $project: {
+                                            "user.password": 0,
+                                            "user.activationKey": 0,
+                                            "user.isActive": 0,
+                                            "user.otpSentAt": 0,
+                                            "user.otp": 0,
+                                        }
+                                    }
                                 ],
                                 as: "replies"
                             }
@@ -90,18 +122,57 @@ export class JournalsService {
                                 from: 'users',
                                 localField: 'userId',
                                 foreignField: '_id',
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: 'journals',
+                                            localField: '_id',
+                                            foreignField: 'createdBy',
+                                            pipeline: [
+                                                {$sort: {createdAt: -1}}
+                                            ],
+                                            as: 'last_journal'
+                                        }
+                                    },
+                                    {$unwind: '$last_journal'},
+                                ],
                                 as: 'user'
                             }
                         },
                         {$unwind: '$user'},
-                        {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
-                        { $sort : { createdAt : -1 } }
+                        {
+                            $project: {
+                                "user.password": 0,
+                                "user.activationKey": 0,
+                                "user.isActive": 0,
+                                "user.otpSentAt": 0,
+                                "user.otp": 0,
+                            }
+                        },
+                        {$sort: {createdAt: -1}}
                     ],
                     as: 'comments'
                 }
             },
+            {
+                $project: {
+                    "comments.user.last_journal._id": 0,
+                    "comments.user.last_journal.description": 0,
+                    "comments.user.last_journal.createdBy": 0,
+                    "comments.user.last_journal.createdAt": 0,
+                    "comments.user.last_journal.type": 0,
+                    "comments.user.last_journal.category": 0,
+                    "comments.replies.user.last_journal._id": 0,
+                    "comments.replies.user.last_journal.description": 0,
+                    "comments.replies.user.last_journal.createdBy": 0,
+                    "comments.replies.user.last_journal.createdAt": 0,
+                    "comments.replies.user.last_journal.type": 0,
+                    "comments.replies.user.last_journal.category": 0,
+                }
+            },
         ]).toArray();
     }
+
     async aggregateByDate(user?: any, postId?) {
         const matchQuery = {
             $match: {},
@@ -148,7 +219,15 @@ export class JournalsService {
                 }
             },
             {$unwind: '$user'},
-            {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+            {
+                $project: {
+                    "user.password": 0,
+                    "user.activationKey": 0,
+                    "user.otp": 0,
+                    "user.otpSentAt": 0,
+                    "user.isActive": 0
+                }
+            },
             {
                 $lookup: {
                     from: 'comments',
@@ -175,7 +254,15 @@ export class JournalsService {
                                         }
                                     },
                                     {$unwind: '$user'},
-                                    {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
+                                    {
+                                        $project: {
+                                            "user.password": 0,
+                                            "user.activationKey": 0,
+                                            "user.otp": 0,
+                                            "user.otpSentAt": 0,
+                                            "user.isActive": 0
+                                        }
+                                    },
                                 ],
                                 as: "replies"
                             }
@@ -189,8 +276,16 @@ export class JournalsService {
                             }
                         },
                         {$unwind: '$user'},
-                        {$project: {"user.password": 0, "user.activationKey": 0, "user.otp": 0, "user.otpSentAt": 0, "user.isActive": 0}},
-                        { $sort : { createdAt : -1 } }
+                        {
+                            $project: {
+                                "user.password": 0,
+                                "user.activationKey": 0,
+                                "user.otp": 0,
+                                "user.otpSentAt": 0,
+                                "user.isActive": 0
+                            }
+                        },
+                        {$sort: {createdAt: -1}}
                     ],
                     as: 'comments'
                 }
@@ -214,7 +309,7 @@ export class JournalsService {
                 }
             },
             {$project: {"_id": 0, "journals": 1, date: '$_id'}},
-            { $sort : { date : -1 } }
+            {$sort: {date: -1}}
         ]).toArray()
     }
 }

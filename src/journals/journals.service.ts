@@ -101,6 +101,7 @@ export class JournalsService {
                                                         as: 'last_journal'
                                                     }
                                                 },
+                                                {$unwind: '$last_journal'},
                                             ],
                                             as: 'user'
                                         }
@@ -139,6 +140,7 @@ export class JournalsService {
                                             as: 'last_journal'
                                         }
                                     },
+                                    {$unwind: '$last_journal'},
                                 ],
                                 as: 'user'
                             }

@@ -93,12 +93,14 @@ export class JournalsService {
                                                         localField: '_id',
                                                         foreignField: 'createdBy',
                                                         pipeline: [
-                                                            {$sort: {createdAt: -1}}
+                                                            {$sort: {createdAt: -1}},
+                                                            {
+                                                                "$limit": 1
+                                                            }
                                                         ],
                                                         as: 'last_journal'
                                                     }
                                                 },
-                                                {$unwind: '$last_journal'},
                                             ],
                                             as: 'user'
                                         }
@@ -129,12 +131,14 @@ export class JournalsService {
                                             localField: '_id',
                                             foreignField: 'createdBy',
                                             pipeline: [
-                                                {$sort: {createdAt: -1}}
+                                                {$sort: {createdAt: -1}},
+                                                {
+                                                    "$limit": 1
+                                                }
                                             ],
                                             as: 'last_journal'
                                         }
                                     },
-                                    {$unwind: '$last_journal'},
                                 ],
                                 as: 'user'
                             }
@@ -144,30 +148,14 @@ export class JournalsService {
                             $project: {
                                 "user.password": 0,
                                 "user.activationKey": 0,
-                                "user.isActive": 0,
-                                "user.otpSentAt": 0,
                                 "user.otp": 0,
+                                "user.otpSentAt": 0,
+                                "user.isActive": 0
                             }
                         },
                         {$sort: {createdAt: -1}}
                     ],
                     as: 'comments'
-                }
-            },
-            {
-                $project: {
-                    "comments.user.last_journal._id": 0,
-                    "comments.user.last_journal.description": 0,
-                    "comments.user.last_journal.createdBy": 0,
-                    "comments.user.last_journal.createdAt": 0,
-                    "comments.user.last_journal.type": 0,
-                    "comments.user.last_journal.category": 0,
-                    "comments.replies.user.last_journal._id": 0,
-                    "comments.replies.user.last_journal.description": 0,
-                    "comments.replies.user.last_journal.createdBy": 0,
-                    "comments.replies.user.last_journal.createdAt": 0,
-                    "comments.replies.user.last_journal.type": 0,
-                    "comments.replies.user.last_journal.category": 0,
                 }
             },
         ]).toArray();

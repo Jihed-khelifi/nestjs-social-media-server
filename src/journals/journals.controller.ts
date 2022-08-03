@@ -40,11 +40,11 @@ export class JournalsController {
   }
   @UseGuards(JwtAuthGuard)
   @Get(':type')
-  getMyAllDataByDate(@Param('type') type: string, @Request() req, @RealIP() ip: string) {
+  async getMyAllDataByDate(@Param('type') type: string, @Request() req, @RealIP() ip: string) {
     let user = req.user;
     if (type === 'country' && !req.user.country) {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
-      axios.get(api).then(async res => {
+      await axios.get(api).then(async res => {
         if (res.status === 200 || res.status === 201) {
           const {city, country, region, latitude, longitude} = res.data;
           user = await this.userService.updateUser(new ObjectId(user.id), {

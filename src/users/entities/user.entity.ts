@@ -1,4 +1,5 @@
-import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
+import {Entity, Column, ObjectIdColumn, ObjectID} from 'typeorm';
+import {LocationType} from "../dto/create-user.dto";
 
 @Entity('users')
 export class User {
@@ -19,6 +20,18 @@ export class User {
 
   @Column()
   otp: string;
+
+  @Column()
+  country: string;
+
+  @Column()
+  state: string;
+
+  @Column()
+  city: string;
+
+  @Column()
+  location: LocationType;
 
   @Column({ type: 'timestamp', nullable: true  })
   dob?: Date;

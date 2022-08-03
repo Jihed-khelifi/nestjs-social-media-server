@@ -19,13 +19,16 @@ export class UsersService {
     private usersRepository: MongoRepository<User>,
     private emailService: EmailService,
     private authService: AuthService,
-  ) {}
+  ) {
+      usersRepository.createCollectionIndex({location: '2dsphere'}).then();
+  }
   async create(createUserDto: CreateUserDto) {
     const userByUsername = await this.findByUsername(createUserDto.username);
     const userByEmail = await this.findByEmail(createUserDto.email);
     if (userByEmail || userByUsername) {
       throw new HttpException('User already exists.', HttpStatus.UNAUTHORIZED);
     }
+
     const user = await this.usersRepository.save({
       ...createUserDto,
       isActive: false,

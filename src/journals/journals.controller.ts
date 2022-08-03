@@ -1,9 +1,10 @@
-import {Controller, Get, Post, Body, Request, UseGuards, Param, Put, Delete} from '@nestjs/common';
+import {Controller, Get, Post, Body, Request, UseGuards, Param, Put, Delete, Ip} from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { ObjectId } from 'mongodb';
 import {UpdateJournalDto} from "./dto/update-journal.dto";
+import {RealIP} from "nestjs-real-ip";
 
 @Controller('journals')
 export class JournalsController {
@@ -37,7 +38,9 @@ export class JournalsController {
   }
   @UseGuards(JwtAuthGuard)
   @Get(':type')
-  getMyAllDataByDate(@Param('type') type: string, @Request() req) {
+  getMyAllDataByDate(@Param('type') type: string, @Request() req, @RealIP() ip: string) {
+    console.log(ip);
+    console.log(req.ip);
     return this.journalsService.aggregateByDate(req.user, type);
   }
   @UseGuards(JwtAuthGuard)

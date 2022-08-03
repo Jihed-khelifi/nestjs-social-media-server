@@ -5,10 +5,12 @@ import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { ObjectId } from 'mongodb';
 import {UpdateJournalDto} from "./dto/update-journal.dto";
 import {RealIP} from "nestjs-real-ip";
+import {UsersService} from "../users/users.service";
+const axios = require('axios').default;
 
 @Controller('journals')
 export class JournalsController {
-  constructor(private readonly journalsService: JournalsService) {}
+  constructor(private readonly journalsService: JournalsService, private userService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -39,9 +41,27 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get(':type')
   getMyAllDataByDate(@Param('type') type: string, @Request() req, @RealIP() ip: string) {
-    console.log(ip);
-    console.log(req.ip);
-    return this.journalsService.aggregateByDate(req.user, type);
+    let user = req.user;
+    if (type === 'country' && !req.user.country) {
+      const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
+      axios.get(api).then(async res => {
+        if (res.status === 200 || res.status === 201) {
+          const {city, country, region, latitude, longitude} = res.data;
+          user = await this.userService.updateUser(new ObjectId(user.id), {
+            ...{
+              city,
+              country,
+              state: region,
+              location: {
+                type: 'Point',
+                coordinates: [longitude, latitude]
+              }
+            }
+          })
+        }
+      });
+    }
+    return this.journalsService.aggregateByDate(user, type);
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

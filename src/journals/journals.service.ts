@@ -6,10 +6,11 @@ import {Journal} from "./entities/journal.entity";
 import {User} from "../users/entities/user.entity";
 import {ObjectId} from 'mongodb';
 import {UpdateJournalDto} from "./dto/update-journal.dto";
+import {UsersService} from "../users/users.service";
 
 @Injectable()
 export class JournalsService {
-    constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>) {
+    constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {
     }
 
     create(createJournalDto: CreateJournalDto) {
@@ -163,23 +164,30 @@ export class JournalsService {
         ]).toArray();
     }
 
-    async aggregateByDate(user?: any, postId?) {
+    async aggregateByDate(user: any, type: string) {
         const matchQuery = {
             $match: {},
         };
-        if (user) {
+        if (type === 'mine') {
             matchQuery.$match = {
                 createdBy: new ObjectId(user.id)
             }
         } else {
-            matchQuery.$match = {
-                type: 'public',
-            }
-        }
-        if (postId) {
-            matchQuery.$match = {
-                ...matchQuery.$match,
-                _id: new ObjectId(postId)
+            if (type === 'country') {
+                if (!user.country) {
+                    return [];
+                }
+                const countryUsers = await this.userService.findByCountry(user.country);
+                matchQuery.$match = {
+                    type: 'public',
+                    createdBy: {
+                        $in: countryUsers.map(u => new ObjectId(u.id))
+                    }
+                }
+            } else {
+                matchQuery.$match = {
+                    type: 'public',
+                }
             }
         }
         return this.journalMongoRepository.aggregate([

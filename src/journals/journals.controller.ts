@@ -38,11 +38,7 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get(':type')
   getMyAllDataByDate(@Param('type') type: string, @Request() req) {
-    let user = null;
-    if (type === 'mine') {
-      user = req.user;
-    }
-    return this.journalsService.aggregateByDate(user);
+    return this.journalsService.aggregateByDate(req.user, type);
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

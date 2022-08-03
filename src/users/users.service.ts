@@ -60,6 +60,11 @@ export class UsersService {
       email,
     });
   }
+  async findByCountry(country: string): Promise<User[]> {
+    return this.usersRepository.findBy({
+      country,
+    });
+  }
   async updateDob(id: ObjectId, updateUserDto: UserDobDto): Promise<User> {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);

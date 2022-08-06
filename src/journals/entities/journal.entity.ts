@@ -1,5 +1,6 @@
 import {Entity, Column, ObjectIdColumn, ObjectID, CreateDateColumn} from 'typeorm';
 import {Emotion} from "../../emotions/entities/emotion.entity";
+import {LocationType} from "../../users/dto/create-user.dto";
 
 @Entity('journals')
 export class Journal {
@@ -20,6 +21,12 @@ export class Journal {
 
     @ObjectIdColumn()
     createdBy: ObjectID;
+
+    @ObjectIdColumn()
+    userLocation: LocationType;
+
+    @Column()
+    userCountry: string;
 
     @CreateDateColumn()
     createdAt: Date;

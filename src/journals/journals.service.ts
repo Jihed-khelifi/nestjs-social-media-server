@@ -11,6 +11,7 @@ import {UsersService} from "../users/users.service";
 @Injectable()
 export class JournalsService {
     constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {
+        journalMongoRepository.createCollectionIndex({userLocation: '2dsphere'}).then();
     }
 
     create(createJournalDto: CreateJournalDto) {
@@ -168,6 +169,7 @@ export class JournalsService {
         const matchQuery = {
             $match: {},
         };
+        let nearQuery = {};
         if (type === 'mine') {
             matchQuery.$match = {
                 createdBy: new ObjectId(user.id)
@@ -177,13 +179,35 @@ export class JournalsService {
                 if (!user.country) {
                     return [];
                 }
-                const countryUsers = await this.userService.findByCountry(user.country);
                 matchQuery.$match = {
                     type: 'public',
-                    createdBy: {
-                        $in: countryUsers.map(u => new ObjectId(u.id))
+                    userCountry: user.country
+                }
+            } else if (type === 'local') {
+                nearQuery = {
+                    $geoNear: {
+                        near: user.location,
+                        spherical: true,
+                        distanceMultiplier: 0.001,
+                        distanceField: 'distance',
                     }
                 }
+                const nearByPosts = await this.journalMongoRepository.aggregate([
+                    {...nearQuery},
+                    {
+                        $match: {
+                            type: 'public',
+                        }
+                    },
+                    {$sort: {distance: 1}},
+                    {$limit: 8000}
+                ]).toArray();
+                matchQuery.$match = {
+                    type: 'public',
+                    _id: {
+                        $in: nearByPosts.map(p => new ObjectId(p._id))
+                    }
+                };
             } else {
                 matchQuery.$match = {
                     type: 'public',

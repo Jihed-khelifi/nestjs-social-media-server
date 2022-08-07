@@ -175,44 +175,7 @@ export class JournalsService {
                 createdBy: new ObjectId(user.id)
             }
         } else {
-            if (type === 'country') {
-                if (!user.country) {
-                    return [];
-                }
-                matchQuery.$match = {
-                    type: 'public',
-                    userCountry: user.country
-                }
-            } else if (type === 'local') {
-                nearQuery = {
-                    $geoNear: {
-                        near: user.location,
-                        spherical: true,
-                        distanceMultiplier: 0.001,
-                        distanceField: 'distance',
-                    }
-                }
-                const nearByPosts = await this.journalMongoRepository.aggregate([
-                    {...nearQuery},
-                    {
-                        $match: {
-                            type: 'public',
-                        }
-                    },
-                    {$sort: {distance: 1}},
-                    {$limit: 8000}
-                ]).toArray();
-                matchQuery.$match = {
-                    type: 'public',
-                    _id: {
-                        $in: nearByPosts.map(p => new ObjectId(p._id))
-                    }
-                };
-            } else {
-                matchQuery.$match = {
-                    type: 'public',
-                }
-            }
+            return this.getCommunityPosts(user, type)
         }
         return this.journalMongoRepository.aggregate([
             {...matchQuery},
@@ -366,6 +329,168 @@ export class JournalsService {
             },
             {$project: {"_id": 0, "journals": 1, date: '$_id'}},
             {$sort: {date: -1}}
+        ]).toArray()
+    }
+    async getCommunityPosts(user: any, type: string) {
+        const matchQuery = {
+            $match: {},
+        };
+        let nearQuery = {};
+        if (type === 'country') {
+            if (!user.country) {
+                return [];
+            }
+            matchQuery.$match = {
+                type: 'public',
+                userCountry: user.country
+            }
+        } else if (type === 'local') {
+            nearQuery = {
+                $geoNear: {
+                    near: user.location,
+                    spherical: true,
+                    distanceMultiplier: 0.001,
+                    distanceField: 'distance',
+                }
+            }
+            const nearByPosts = await this.journalMongoRepository.aggregate([
+                {...nearQuery},
+                {
+                    $match: {
+                        type: 'public',
+                    }
+                },
+                {$sort: {distance: 1}},
+                {$limit: 8000}
+            ]).toArray();
+            matchQuery.$match = {
+                type: 'public',
+                _id: {
+                    $in: nearByPosts.map(p => new ObjectId(p._id))
+                }
+            };
+        } else {
+            matchQuery.$match = {
+                type: 'public',
+            }
+        }
+        return this.journalMongoRepository.aggregate([
+            {...matchQuery},
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createdBy',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {$unwind: '$user'},
+            {
+                $project: {
+                    "user.password": 0,
+                    "user.activationKey": 0,
+                    "user.otp": 0,
+                    "user.otpSentAt": 0,
+                    "user.isActive": 0
+                }
+            },
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    pipeline: [
+                        {
+                            $match: {
+                                commentId: null
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "comments",
+                                localField: "_id",
+                                foreignField: "commentId",
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: 'users',
+                                            localField: 'userId',
+                                            foreignField: '_id',
+                                            pipeline: [
+                                                {
+                                                    $lookup: {
+                                                        from: 'journals',
+                                                        localField: '_id',
+                                                        foreignField: 'createdBy',
+                                                        pipeline: [
+                                                            {$sort: {createdAt: -1}},
+                                                            {
+                                                                "$limit": 1
+                                                            }
+                                                        ],
+                                                        as: 'last_journal'
+                                                    }
+                                                },
+                                                {$unwind: '$last_journal'},
+                                            ],
+                                            as: 'user'
+                                        }
+                                    },
+                                    {$unwind: '$user'},
+                                    {
+                                        $project: {
+                                            "user.password": 0,
+                                            "user.activationKey": 0,
+                                            "user.isActive": 0,
+                                            "user.otpSentAt": 0,
+                                            "user.otp": 0,
+                                        }
+                                    }
+                                ],
+                                as: "replies"
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'userId',
+                                foreignField: '_id',
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: 'journals',
+                                            localField: '_id',
+                                            foreignField: 'createdBy',
+                                            pipeline: [
+                                                {$sort: {createdAt: -1}},
+                                                {
+                                                    "$limit": 1
+                                                }
+                                            ],
+                                            as: 'last_journal'
+                                        }
+                                    },
+                                    {$unwind: '$last_journal'},
+                                ],
+                                as: 'user'
+                            }
+                        },
+                        {$unwind: '$user'},
+                        {
+                            $project: {
+                                "user.password": 0,
+                                "user.activationKey": 0,
+                                "user.otp": 0,
+                                "user.otpSentAt": 0,
+                                "user.isActive": 0
+                            }
+                        },
+                        {$sort: {createdAt: -1}}
+                    ],
+                    as: 'comments'
+                }
+            },
+            {$sort: {createdAt: -1}}
         ]).toArray()
     }
 }

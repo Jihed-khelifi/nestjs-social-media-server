@@ -165,17 +165,12 @@ export class JournalsService {
         ]).toArray();
     }
 
-    async aggregateByDate(user: any, type: string) {
+    async minePosts(user: any) {
         const matchQuery = {
             $match: {},
         };
-        let nearQuery = {};
-        if (type === 'mine') {
-            matchQuery.$match = {
-                createdBy: new ObjectId(user.id)
-            }
-        } else {
-            return this.getCommunityPosts(user, type)
+        matchQuery.$match = {
+            createdBy: new ObjectId(user.id)
         }
         return this.journalMongoRepository.aggregate([
             {...matchQuery},
@@ -331,7 +326,7 @@ export class JournalsService {
             {$sort: {date: -1}}
         ]).toArray()
     }
-    async getCommunityPosts(user: any, type: string) {
+    async getCommunityPosts(user: any, type: string, page: number) {
         const matchQuery = {
             $match: {},
         };
@@ -377,6 +372,16 @@ export class JournalsService {
         return this.journalMongoRepository.aggregate([
             {...matchQuery},
             {
+                $project: {
+                    emotions: 1,
+                    category: 1,
+                    description: 1,
+                    type: 1,
+                    createdBy: 1,
+                    createdAt: 1,
+                }
+            },
+            {
                 $lookup: {
                     from: 'users',
                     localField: 'createdBy',
@@ -391,7 +396,11 @@ export class JournalsService {
                     "user.activationKey": 0,
                     "user.otp": 0,
                     "user.otpSentAt": 0,
-                    "user.isActive": 0
+                    "user.location": 0,
+                    "user.isActive": 0,
+                    "user.country": 0,
+                    "user.state": 0,
+                    "user.city": 0,
                 }
             },
             {
@@ -441,9 +450,13 @@ export class JournalsService {
                                         $project: {
                                             "user.password": 0,
                                             "user.activationKey": 0,
-                                            "user.isActive": 0,
-                                            "user.otpSentAt": 0,
                                             "user.otp": 0,
+                                            "user.otpSentAt": 0,
+                                            "user.location": 0,
+                                            "user.isActive": 0,
+                                            "user.country": 0,
+                                            "user.state": 0,
+                                            "user.city": 0,
                                         }
                                     }
                                 ],
@@ -490,7 +503,13 @@ export class JournalsService {
                     as: 'comments'
                 }
             },
-            {$sort: {createdAt: -1}}
+            {$sort: {createdAt: -1}},
+            {
+                $facet: {
+                    pageDetails: [{$count: "total"}, {$addFields: {page: page}}],
+                    journals: [{$skip: page * 10}, {$limit: 10}]
+                }
+            }
         ]).toArray()
     }
 }

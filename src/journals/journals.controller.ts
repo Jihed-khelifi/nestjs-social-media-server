@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Request, UseGuards, Param, Put, Delete, Ip} from '@nestjs/common';
+import {Controller, Get, Post, Body, Request, UseGuards, Param, Put, Delete, Ip, Query} from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
@@ -46,6 +46,12 @@ export class JournalsController {
   @Get(':type')
   async getMyAllDataByDate(@Param('type') type: string, @Request() req, @RealIP() ip: string) {
     let user = req.user;
+    return this.journalsService.minePosts(user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('community/:type')
+  async getCommunityPosts(@Param('type') type: string, @Query('page') page: number = 0, @Request() req, @RealIP() ip: string) {
+    let user = req.user;
     if (type === 'country' && !req.user.country) {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
       await axios.get(api).then(async res => {
@@ -65,7 +71,7 @@ export class JournalsController {
         }
       });
     }
-    return this.journalsService.aggregateByDate(user, type);
+    return this.journalsService.getCommunityPosts(user, type, page);
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

@@ -356,7 +356,7 @@ export class JournalsService {
                     }
                 },
                 {$sort: {distance: 1}},
-                {$limit: 8000}
+                {$skip: page * 10}, {$limit: 10}
             ]).toArray();
             matchQuery.$match = {
                 type: 'public',

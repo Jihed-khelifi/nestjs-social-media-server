@@ -27,11 +27,6 @@ export class JournalsController {
   update(@Request() req, @Body() updateJournalDto: UpdateJournalDto) {
     return this.journalsService.update(updateJournalDto);
   }
-  // @UseGuards(JwtAuthGuard)
-  // @Get()
-  // findAll(@Request() req) {
-  //   return this.journalsService.findAll(req.user);
-  // }
   @UseGuards(JwtAuthGuard)
   @Get('getSingle/:postId')
   getPostById(@Param('postId') postId: string) {
@@ -74,8 +69,8 @@ export class JournalsController {
     return this.journalsService.getCommunityPosts(user, type, page);
   }
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  deleteJournal(@Param('id') id: string, @Request() req) {
-    return this.journalsService.delete(id, req.user);
+  @Get('makeUserOffline')
+  async makeUserOffline(@Request() req) {
+    await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: false});
   }
 }

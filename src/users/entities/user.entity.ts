@@ -33,6 +33,9 @@ export class User {
   @Column()
   location: LocationType;
 
+  @Column({ default: false })
+  isOnline: boolean = false;
+
   @Column({ type: 'timestamp', nullable: true  })
   dob?: Date;
 

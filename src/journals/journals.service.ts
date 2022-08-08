@@ -340,6 +340,7 @@ export class JournalsService {
                 userCountry: user.country
             }
         } else if (type === 'local') {
+            await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
             nearQuery = {
                 $geoNear: {
                     near: user.location,

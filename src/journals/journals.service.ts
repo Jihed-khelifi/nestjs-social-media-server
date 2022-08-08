@@ -509,6 +509,9 @@ export class JournalsService {
                     pageDetails: [{$count: "total"}, {$addFields: {page: page}}],
                     journals: [{$skip: page * 10}, {$limit: 10}]
                 }
+            },
+            {
+                $unwind: '$pageDetails'
             }
         ]).toArray()
     }

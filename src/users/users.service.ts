@@ -66,6 +66,26 @@ export class UsersService {
       country,
     });
   }
+  async getNearbyActiveUsers(user): Promise<User[]> {
+    return this.usersRepository.aggregate([
+      {
+        $geoNear: {
+          near: user.location,
+          spherical: true,
+          distanceMultiplier: 0.001,
+          distanceField: 'distance',
+        }
+      },
+      {
+        $match: {
+          isOnline: true
+        }
+      },
+      {
+        $limit: 5000
+      }
+    ]).toArray();
+  }
   async updateDob(id: ObjectId, updateUserDto: UserDobDto): Promise<User> {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);

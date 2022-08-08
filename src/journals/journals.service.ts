@@ -341,28 +341,11 @@ export class JournalsService {
             }
         } else if (type === 'local') {
             await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
-            nearQuery = {
-                $geoNear: {
-                    near: user.location,
-                    spherical: true,
-                    distanceMultiplier: 0.001,
-                    distanceField: 'distance',
-                }
-            }
-            const nearByPosts = await this.journalMongoRepository.aggregate([
-                {...nearQuery},
-                {
-                    $match: {
-                        type: 'public',
-                    }
-                },
-                {$sort: {distance: 1}},
-                {$skip: page * 10}, {$limit: 10}
-            ]).toArray();
+            const nearByActiveUsers = await this.userService.getNearbyActiveUsers(user);
             matchQuery.$match = {
                 type: 'public',
-                _id: {
-                    $in: nearByPosts.map(p => new ObjectId(p._id))
+                createdBy: {
+                    $in: nearByActiveUsers.map(p => new ObjectId(p.id))
                 }
             };
         } else {

@@ -27,11 +27,11 @@ export class JournalsController {
   update(@Request() req, @Body() updateJournalDto: UpdateJournalDto) {
     return this.journalsService.update(updateJournalDto);
   }
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  findAll(@Request() req) {
-    return this.journalsService.findAll(req.user);
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Get()
+  // findAll(@Request() req) {
+  //   return this.journalsService.findAll(req.user);
+  // }
   @UseGuards(JwtAuthGuard)
   @Get('getSingle/:postId')
   getPostById(@Param('postId') postId: string) {
@@ -43,8 +43,8 @@ export class JournalsController {
     return this.journalsService.countPublicPosts(req.user);
   }
   @UseGuards(JwtAuthGuard)
-  @Get(':type')
-  async getMyAllDataByDate(@Param('type') type: string, @Request() req, @RealIP() ip: string) {
+  @Get()
+  async getMyAllDataByDate(@Request() req) {
     let user = req.user;
     return this.journalsService.minePosts(user);
   }

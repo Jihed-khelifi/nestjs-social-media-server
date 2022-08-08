@@ -70,7 +70,7 @@ export class JournalsController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('changeUserOnlineStatus/:online')
-  async changeUserOnlineStatus(@Param('online') online: boolean, @Request() req) {
-    await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: online});
+  async changeUserOnlineStatus(@Param('online') online: string, @Request() req) {
+    await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: (online === "true")});
   }
 }

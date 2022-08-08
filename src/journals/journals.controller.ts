@@ -16,10 +16,6 @@ export class JournalsController {
   @Post()
   create(@Request() req, @Body() createJournalDto: CreateJournalDto) {
     createJournalDto.createdBy = new ObjectId(req.user.id);
-    if (createJournalDto.type === 'public') {
-      createJournalDto.userLocation = req.user.location;
-      createJournalDto.userCountry = req.user.country;
-    }
     return this.journalsService.create(createJournalDto);
   }
   @UseGuards(JwtAuthGuard)

@@ -10,9 +10,7 @@ import {UsersService} from "../users/users.service";
 
 @Injectable()
 export class JournalsService {
-    constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {
-        journalMongoRepository.createCollectionIndex({userLocation: '2dsphere'}).then();
-    }
+    constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {}
 
     create(createJournalDto: CreateJournalDto) {
         return this.journalMongoRepository.save(createJournalDto);
@@ -330,15 +328,17 @@ export class JournalsService {
         const matchQuery = {
             $match: {},
         };
-        let nearQuery = {};
         if (type === 'country') {
             if (!user.country) {
                 return [];
             }
+            const countryUsers = await this.userService.findByCountry(user.country);
             matchQuery.$match = {
                 type: 'public',
-                userCountry: user.country
-            }
+                createdBy: {
+                    $in: countryUsers.map(p => new ObjectId(p.id))
+                }
+            };
         } else if (type === 'local') {
             await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
             const nearByActiveUsers = await this.userService.getNearbyActiveUsers(user);

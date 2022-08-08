@@ -8,7 +8,5 @@ export class CreateJournalDto {
     type: string;
     description: string;
     createdBy?: string;
-    userLocation?: LocationType;
-    userCountry?: string;
 }
 

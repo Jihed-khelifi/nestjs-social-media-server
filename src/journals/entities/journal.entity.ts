@@ -22,12 +22,6 @@ export class Journal {
     @ObjectIdColumn()
     createdBy: ObjectID;
 
-    @ObjectIdColumn()
-    userLocation: LocationType;
-
-    @Column()
-    userCountry: string;
-
     @CreateDateColumn()
     createdAt: Date;
 }

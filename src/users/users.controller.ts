@@ -20,9 +20,4 @@ export class UsersController {
       console.log(e);
     }
   }
-  @UseGuards(JwtAuthGuard)
-  @Get('nearByUsers')
-  nearByUsers(@Request() req) {
-    return this.userService.getNearbyActiveUsers(req.user);
-  }
 }

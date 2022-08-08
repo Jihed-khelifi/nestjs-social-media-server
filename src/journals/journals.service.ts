@@ -342,6 +342,7 @@ export class JournalsService {
         } else if (type === 'local') {
             await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
             const nearByActiveUsers = await this.userService.getNearbyActiveUsers(user);
+            console.log(nearByActiveUsers);
             matchQuery.$match = {
                 type: 'public',
                 createdBy: {

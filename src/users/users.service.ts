@@ -83,6 +83,12 @@ export class UsersService {
       },
       {
         $limit: 5000
+      },
+      {
+        $project: {
+          id: '$_id',
+          _id: 0,
+        }
       }
     ]).toArray();
   }

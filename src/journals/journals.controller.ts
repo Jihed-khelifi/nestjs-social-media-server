@@ -69,8 +69,8 @@ export class JournalsController {
     return this.journalsService.getCommunityPosts(user, type, page);
   }
   @UseGuards(JwtAuthGuard)
-  @Get('makeUserOffline')
-  async makeUserOffline(@Request() req) {
-    await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: false});
+  @Get('changeUserOnlineStatus/:online')
+  async changeUserOnlineStatus(@Param('online') online: boolean, @Request() req) {
+    await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: online});
   }
 }

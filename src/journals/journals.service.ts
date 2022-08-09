@@ -325,6 +325,7 @@ export class JournalsService {
         ]).toArray()
     }
     async getCommunityPosts(user: any, type: string, page: number) {
+        await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
         const matchQuery = {
             $match: {},
         };
@@ -340,9 +341,7 @@ export class JournalsService {
                 }
             };
         } else if (type === 'local') {
-            await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
             const nearByActiveUsers = await this.userService.getNearbyActiveUsers(user);
-            console.log(nearByActiveUsers);
             matchQuery.$match = {
                 type: 'public',
                 createdBy: {

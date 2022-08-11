@@ -10,7 +10,8 @@ import {UsersService} from "../users/users.service";
 
 @Injectable()
 export class JournalsService {
-    constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {}
+    constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {
+    }
 
     create(createJournalDto: CreateJournalDto) {
         return this.journalMongoRepository.save(createJournalDto);
@@ -324,6 +325,7 @@ export class JournalsService {
             {$sort: {date: -1}}
         ]).toArray()
     }
+
     async getCommunityPosts(user: any, type: string, page: number) {
         await this.userService.updateUser(new ObjectId(user.id), {isOnline: true});
         const matchQuery = {
@@ -498,5 +500,77 @@ export class JournalsService {
                 $unwind: '$pageDetails'
             }
         ]).toArray()
+    }
+
+    async getMinutesOfEmotions(month: number) {
+        return this.journalMongoRepository.aggregate([
+            {
+                $project: {
+                    month: { "$month": "$createdAt" },
+                    date: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$createdAt"
+                        }
+                    },
+                    _id: 1,
+                    emotions: 1,
+                    createdAt: 1,
+                }
+            },
+            {$match: { "month": +month }},
+            {$sort: {createdAt: -1}},
+            {$group: {_id: '$date', data: {$push: '$$ROOT'}}},
+            {$project: {documentAndNextPostTime: {$zip: {inputs: ['$data', {$concatArrays: [[null], '$data.createdAt']}]}}}},
+            {$unwind: {path: '$documentAndNextPostTime'}},
+            {$replaceWith: {$mergeObjects: [{$arrayElemAt: ['$documentAndNextPostTime', 0]}, {nextPostTime: {$arrayElemAt: ['$documentAndNextPostTime', 1]}}]}},
+            {
+                $set: {
+                    time_difference: {
+                        $dateDiff:
+                            {
+                                startDate: "$createdAt",
+                                endDate: "$nextPostTime",
+                                unit: "minute"
+                            }
+                    }
+                }
+            },
+            {$unset: 'nextPostTime'},
+            {$set: {emotion: {$arrayElemAt: ['$emotions.type', 0]}}},
+            {
+                $set: {
+                    nextDate: {
+                        $add: [{
+                            $dateFromString: {
+                                dateString: "$date"
+                            }
+                        }, 24 * 60 * 60000]
+                    }
+                }
+            },
+            {
+                $set: {
+                    time_difference: { $ifNull: [ "$time_difference", {
+                            $dateDiff:
+                                {
+                                    startDate: "$createdAt",
+                                    endDate: "$nextDate",
+                                    unit: "minute"
+                                }
+                        } ] }
+                }
+            },
+            {$unset: ['emotions', 'nextDate']},
+            {$group: {_id: '$date', data: {$push: '$$ROOT'}}},
+            {
+                $project: {
+                    _id: 0,
+                    date: "$_id",
+                    data: 1,
+                }
+            },
+            {$unset: ['data.date', 'data._id', 'data.month']},
+        ]).toArray();
     }
 }

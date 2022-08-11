@@ -69,4 +69,8 @@ export class JournalsController {
   async changeUserOnlineStatus(@Param('online') online: string, @Request() req) {
     await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: (online === "true")});
   }
+  @Get('getMinutesOfEmotions/:month')
+  async getMinutesOfEmotions(@Param('month') month: number, @Request() req) {
+    return this.journalsService.getMinutesOfEmotions(month);
+  }
 }

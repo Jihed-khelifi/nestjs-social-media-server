@@ -503,7 +503,7 @@ export class JournalsService {
     }
 
     async getMinutesOfEmotions(month: number) {
-        return this.journalMongoRepository.aggregate([
+        const data = await this.journalMongoRepository.aggregate([
             {
                 $project: {
                     month: { "$month": "$createdAt" },
@@ -570,7 +570,43 @@ export class JournalsService {
                     data: 1,
                 }
             },
-            {$unset: ['data.date', 'data._id', 'data.month']},
+            {$unset: ['data.date', 'data._id', 'data.month', 'data.createdAt']},
         ]).toArray();
+        const finalData = [];
+        for (const outerData of data) {
+            const groupByEmotion = outerData.data.reduce((group, d) => {
+                const { emotion } = d;
+                group['date'] = outerData.date;
+                group[emotion] = group[emotion] ?? [];
+                group[emotion].push(d);
+                return group;
+            }, {});
+            if (groupByEmotion.negative) {
+                groupByEmotion.negative = groupByEmotion.negative.reduce((accumulator, object) => {
+                    return accumulator + object.time_difference;
+                }, 0);
+            }
+            if (groupByEmotion.positive) {
+                groupByEmotion.positive = groupByEmotion.positive.reduce((accumulator, object) => {
+                    return accumulator + object.time_difference;
+                }, 0);
+            }
+            if (groupByEmotion.natural) {
+                groupByEmotion.natural = groupByEmotion.natural.reduce((accumulator, object) => {
+                    return accumulator + object.time_difference;
+                }, 0);
+            }
+            const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
+                if(key === "date") return 0;
+                return prev + groupByEmotion[key];
+            }, 0);
+
+            let finalGroup = Object.keys(groupByEmotion).reduce((prev, key) => {
+                if(key === "date") return {...prev, [key]: groupByEmotion[key] };
+                return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
+            }, {});
+            finalData.push(finalGroup);
+        }
+        return finalData;
     }
 }

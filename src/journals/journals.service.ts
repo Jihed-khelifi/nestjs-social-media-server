@@ -572,7 +572,7 @@ export class JournalsService {
             },
             {$unset: ['data.date', 'data._id', 'data.month', 'data.createdAt']},
         ]).toArray();
-        const finalData = [];
+        const finalData = {};
         for (const outerData of data) {
             const groupByEmotion = outerData.data.reduce((group, d) => {
                 const { emotion } = d;
@@ -598,11 +598,9 @@ export class JournalsService {
             const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
                 return prev + groupByEmotion[key];
             }, 0);
-            let finalGroup = {};
-            finalGroup[outerData.date] = Object.keys(groupByEmotion).reduce((prev, key) => {
+            finalData[outerData.date] = Object.keys(groupByEmotion).reduce((prev, key) => {
                 return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
             }, {});
-            finalData.push(finalGroup);
         }
         return finalData;
     }

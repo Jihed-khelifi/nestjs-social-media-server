@@ -502,8 +502,13 @@ export class JournalsService {
         ]).toArray()
     }
 
-    async getMinutesOfEmotions(month: number) {
+    async getMinutesOfEmotions(user: any, month: number) {
         const data = await this.journalMongoRepository.aggregate([
+            {
+                $match: {
+                    createdBy: new ObjectId(user.id)
+                }
+            },
             {
                 $project: {
                     month: { "$month": "$createdAt" },

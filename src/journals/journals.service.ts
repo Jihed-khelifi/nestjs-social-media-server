@@ -576,7 +576,6 @@ export class JournalsService {
         for (const outerData of data) {
             const groupByEmotion = outerData.data.reduce((group, d) => {
                 const { emotion } = d;
-                group['date'] = outerData.date;
                 group[emotion] = group[emotion] ?? [];
                 group[emotion].push(d);
                 return group;
@@ -597,12 +596,10 @@ export class JournalsService {
                 }, 0);
             }
             const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
-                if(key === "date") return 0;
                 return prev + groupByEmotion[key];
             }, 0);
-
-            let finalGroup = Object.keys(groupByEmotion).reduce((prev, key) => {
-                if(key === "date") return {...prev, [key]: groupByEmotion[key] };
+            let finalGroup = {};
+            finalGroup[outerData.date] = Object.keys(groupByEmotion).reduce((prev, key) => {
                 return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
             }, {});
             finalData.push(finalGroup);

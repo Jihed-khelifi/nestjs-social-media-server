@@ -26,7 +26,9 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get('getSingle/:postId')
   getPostById(@Param('postId') postId: string) {
-    return this.journalsService.getSinglePost(postId);
+    return this.journalsService.getPostsByCondition({
+      _id: new ObjectId(postId)
+    });
   }
   @UseGuards(JwtAuthGuard)
   @Get('count/public')

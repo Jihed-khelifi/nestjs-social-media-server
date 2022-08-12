@@ -23,7 +23,10 @@ export class JournalsService {
 
     getMyPostsOfDate(user: User, date: string) {
         const startDate = new Date(date);
-        return this.journalMongoRepository.findBy({createdBy: new ObjectId(user.id), createdAt: {"$gte": startDate, "$lt": new Date(startDate.getTime() + (60 * 60 * 24 * 1000))}});
+        return this.getPostsByCondition({
+            createdBy: new ObjectId(user.id),
+            createdAt: {"$gte": startDate, "$lt": new Date(startDate.getTime() + (60 * 60 * 24 * 1000))}
+        })
     }
 
     countPublicPosts(user: User) {
@@ -40,11 +43,9 @@ export class JournalsService {
         return journal;
     }
 
-    async getSinglePost(postId) {
+    async getPostsByCondition(matchCondition) {
         const matchQuery = {
-            $match: {
-                _id: new ObjectId(postId)
-            }
+            $match: matchCondition
         };
         return this.journalMongoRepository.aggregate([
             {...matchQuery},

@@ -21,8 +21,9 @@ export class JournalsService {
         return this.journalMongoRepository.update(new ObjectId(updateJournalDto.id), {...updateJournalDto});
     }
 
-    findAll(user: User) {
-        return this.journalMongoRepository.findBy({createdBy: new ObjectId(user.id)});
+    getMyPostsOfDate(user: User, date: string) {
+        const startDate = new Date(date);
+        return this.journalMongoRepository.findBy({createdBy: new ObjectId(user.id), createdAt: {"$gte": startDate, "$lt": new Date(startDate.getTime() + (60 * 60 * 24 * 1000))}});
     }
 
     countPublicPosts(user: User) {

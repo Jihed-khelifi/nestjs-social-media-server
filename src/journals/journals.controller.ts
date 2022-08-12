@@ -70,6 +70,11 @@ export class JournalsController {
     await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: (online === "true")});
   }
   @UseGuards(JwtAuthGuard)
+  @Get('getMyPostsOfDate/:date')
+  async getMyPostsOfDate(@Param('date') date: string, @Request() req) {
+    return this.journalsService.getMyPostsOfDate(req.user, date);
+  }
+  @UseGuards(JwtAuthGuard)
   @Get('getMinutesOfEmotions/:month')
   async getMinutesOfEmotions(@Param('month') month: number, @Request() req) {
     return this.journalsService.getMinutesOfEmotions(req.user, month);

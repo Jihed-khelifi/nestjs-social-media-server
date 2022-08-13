@@ -504,8 +504,56 @@ export class JournalsService {
         ]).toArray()
     }
 
-    async getMinutesOfEmotions(user: any, month: number) {
-        const data = await this.journalMongoRepository.aggregate([
+    async getMinutesOfEmotions(user: any, matchCondition) {
+        const finalData = {};
+        const data = await this.insightAggregation(user, matchCondition);
+        for (const outerData of data) {
+            const groupByEmotion = outerData.data.reduce((group, d) => {
+                const { emotion } = d;
+                group[emotion] = group[emotion] ?? [];
+                group[emotion].push(d);
+                return group;
+            }, {});
+            for (const key of Object.keys(groupByEmotion)) {
+                groupByEmotion[key] = groupByEmotion[key].reduce((accumulator, object) => {
+                    return accumulator + object.time_difference;
+                }, 0);
+            }
+            const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
+                return prev + groupByEmotion[key];
+            }, 0);
+            finalData[outerData.date] = Object.keys(groupByEmotion).reduce((prev, key) => {
+                return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
+            }, {});
+        }
+        return finalData;
+    }
+    async getInsightsData(user: any, startDate: string, endDate: string) {
+        const endD = new Date(endDate);
+        const finalData: any = {};
+        let data = await this.insightAggregation(user, { "createdAt": {"$gte": new Date(startDate), "$lt": new Date(endD.getTime() + (60 * 60 * 24 * 1000))} });
+        data = data.map(d => d.data).flat();
+        const groupByEmotion = data.reduce((group, d) => {
+            const { emotion } = d;
+            group[emotion] = group[emotion] ?? [];
+            group[emotion].push(d);
+            return group;
+        }, {});
+        for (const key of Object.keys(groupByEmotion)) {
+            groupByEmotion[key] = groupByEmotion[key].reduce((accumulator, object) => {
+                return accumulator + object.time_difference;
+            }, 0);
+        }
+        const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
+            return prev + groupByEmotion[key];
+        }, 0);
+        finalData.moodDistribution = Object.keys(groupByEmotion).reduce((prev, key) => {
+            return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
+        }, {});
+        return finalData;
+    }
+    async insightAggregation(user, matchCondition) {
+        return await this.journalMongoRepository.aggregate([
             {
                 $match: {
                     createdBy: new ObjectId(user.id)
@@ -525,7 +573,7 @@ export class JournalsService {
                     createdAt: 1,
                 }
             },
-            {$match: { "month": +month }},
+            {$match: matchCondition },
             {$sort: {createdAt: -1}},
             {$group: {_id: '$date', data: {$push: '$$ROOT'}}},
             {$project: {documentAndNextPostTime: {$zip: {inputs: ['$data', {$concatArrays: [[null], '$data.createdAt']}]}}}},
@@ -568,7 +616,7 @@ export class JournalsService {
                         } ] }
                 }
             },
-            {$unset: ['emotions', 'nextDate']},
+            {$unset: ['nextDate']},
             {$group: {_id: '$date', data: {$push: '$$ROOT'}}},
             {
                 $project: {
@@ -579,36 +627,5 @@ export class JournalsService {
             },
             {$unset: ['data.date', 'data._id', 'data.month', 'data.createdAt']},
         ]).toArray();
-        const finalData = {};
-        for (const outerData of data) {
-            const groupByEmotion = outerData.data.reduce((group, d) => {
-                const { emotion } = d;
-                group[emotion] = group[emotion] ?? [];
-                group[emotion].push(d);
-                return group;
-            }, {});
-            if (groupByEmotion.negative) {
-                groupByEmotion.negative = groupByEmotion.negative.reduce((accumulator, object) => {
-                    return accumulator + object.time_difference;
-                }, 0);
-            }
-            if (groupByEmotion.positive) {
-                groupByEmotion.positive = groupByEmotion.positive.reduce((accumulator, object) => {
-                    return accumulator + object.time_difference;
-                }, 0);
-            }
-            if (groupByEmotion.natural) {
-                groupByEmotion.natural = groupByEmotion.natural.reduce((accumulator, object) => {
-                    return accumulator + object.time_difference;
-                }, 0);
-            }
-            const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
-                return prev + groupByEmotion[key];
-            }, 0);
-            finalData[outerData.date] = Object.keys(groupByEmotion).reduce((prev, key) => {
-                return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
-            }, {});
-        }
-        return finalData;
     }
 }

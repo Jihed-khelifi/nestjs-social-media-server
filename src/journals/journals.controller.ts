@@ -79,6 +79,11 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get('getMinutesOfEmotions/:month')
   async getMinutesOfEmotions(@Param('month') month: number, @Request() req) {
-    return this.journalsService.getMinutesOfEmotions(req.user, month);
+    return this.journalsService.getMinutesOfEmotions(req.user, { "month": +month });
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('getInsightsData/:startDate/:endDate')
+  async getInsightsData(@Param('startDate') startDate: string, @Param('endDate') endDate: string, @Request() req) {
+    return this.journalsService.getInsightsData(req.user, startDate, endDate);
   }
 }

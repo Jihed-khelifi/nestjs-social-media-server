@@ -553,10 +553,14 @@ export class JournalsService {
         }, {});
         finalData.topEmotions = [];
         for (let key of Object.keys(topEmotionGroup)) {
-            for (let emotion of topEmotionGroup[key]) {
-                finalData.topEmotions.push({...emotion, emotions: emotion.emotions.map(e => e.title), percent: Math.round((emotion.time_difference/totalSum) * 100)});
+            for (let emotionData of topEmotionGroup[key]) {
+                const percent = Math.round((emotionData.time_difference/totalSum) * 100);
+                for (let emotion of emotionData.emotions.map(e => e.title)) {
+                    finalData.topEmotions.push({emotion, percent, emotionType: emotionData.emotion, createdAt: emotionData.createdAt});
+                }
             }
         }
+        finalData.topEmotions = finalData.topEmotions.sort((a,b)=> new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
         return finalData;
     }
     async insightAggregation(user, matchCondition) {

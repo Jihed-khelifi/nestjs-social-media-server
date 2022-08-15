@@ -539,6 +539,7 @@ export class JournalsService {
             group[emotion].push(d);
             return group;
         }, {});
+        const topEmotionGroup = {...groupByEmotion};
         for (const key of Object.keys(groupByEmotion)) {
             groupByEmotion[key] = groupByEmotion[key].reduce((accumulator, object) => {
                 return accumulator + object.time_difference;
@@ -548,8 +549,14 @@ export class JournalsService {
             return prev + groupByEmotion[key];
         }, 0);
         finalData.moodDistribution = Object.keys(groupByEmotion).reduce((prev, key) => {
-            return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100) }
+            return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100)}
         }, {});
+        finalData.topEmotions = [];
+        for (let key of Object.keys(topEmotionGroup)) {
+            for (let emotion of topEmotionGroup[key]) {
+                finalData.topEmotions.push({...emotion, emotions: emotion.emotions.map(e => e.title), percent: Math.round((emotion.time_difference/totalSum) * 100)});
+            }
+        }
         return finalData;
     }
     async insightAggregation(user, matchCondition) {

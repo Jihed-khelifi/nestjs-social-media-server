@@ -632,7 +632,7 @@ export class JournalsService {
                     data: 1,
                 }
             },
-            {$unset: ['data.date', 'data._id', 'data.month', 'data.createdAt']},
+            {$unset: ['data.date', 'data._id', 'data.month']},
         ]).toArray();
     }
 }

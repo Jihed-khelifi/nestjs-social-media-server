@@ -533,6 +533,8 @@ export class JournalsService {
         const finalData: any = {};
         let data = await this.insightAggregation(user, { "createdAt": {"$gte": new Date(startDate), "$lt": new Date(endD.getTime() + (60 * 60 * 24 * 1000))} });
         data = data.map(d => d.data).flat();
+        const negativeData = [...data].filter(d => d.emotion === 'negative');
+        const positiveData = [...data].filter(d => d.emotion === 'positive');
         const groupByEmotion = data.reduce((group, d) => {
             const { emotion } = d;
             group[emotion] = group[emotion] ?? [];
@@ -548,19 +550,37 @@ export class JournalsService {
         const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
             return prev + groupByEmotion[key];
         }, 0);
+        const totalSumNegative = negativeData.reduce((accumulator, object) => {
+            return accumulator + object.time_difference;
+        }, 0);
+        const totalSumPositive = positiveData.reduce((accumulator, object) => {
+            return accumulator + object.time_difference;
+        }, 0);
         finalData.moodDistribution = Object.keys(groupByEmotion).reduce((prev, key) => {
             return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100)}
         }, {});
         finalData.topEmotions = [];
+        finalData.causesOfNegativity = [];
+        finalData.causesOfPositivity = [];
         for (let key of Object.keys(topEmotionGroup)) {
             for (let emotionData of topEmotionGroup[key]) {
                 const percent = Math.round((emotionData.time_difference/totalSum) * 100);
                 for (let emotion of emotionData.emotions.map(e => e.title)) {
-                    finalData.topEmotions.push({emotion, percent, emotionType: emotionData.emotion, createdAt: emotionData.createdAt});
+                    finalData.topEmotions.push({title: emotion, percent, type: emotionData.emotion, createdAt: emotionData.createdAt});
                 }
             }
         }
+        for (let catData of negativeData) {
+            const percent = Math.round((catData.time_difference/totalSumNegative) * 100);
+            finalData.causesOfNegativity.push({title: catData.category, type: catData.emotion, createdAt: catData.createdAt, percent});
+        }
+        for (let catData of positiveData) {
+            const percent = Math.round((catData.time_difference/totalSumNegative) * 100);
+            finalData.causesOfPositivity.push({title: catData.category, type: catData.emotion, createdAt: catData.createdAt, percent});
+        }
         finalData.topEmotions = finalData.topEmotions.sort((a,b)=> new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+        finalData.causesOfNegativity = finalData.causesOfNegativity.sort((a,b)=> new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+        finalData.causesOfPositivity = finalData.causesOfPositivity.sort((a,b)=> new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
         return finalData;
     }
     async insightAggregation(user, matchCondition) {
@@ -581,6 +601,7 @@ export class JournalsService {
                     },
                     _id: 1,
                     emotions: 1,
+                    category: 1,
                     createdAt: 1,
                 }
             },

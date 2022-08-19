@@ -7,7 +7,9 @@ import {User} from "../users/entities/user.entity";
 import {ObjectId} from 'mongodb';
 import {UpdateJournalDto} from "./dto/update-journal.dto";
 import {UsersService} from "../users/users.service";
-
+const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
 @Injectable()
 export class JournalsService {
     constructor(@InjectRepository(Journal) private journalMongoRepository: MongoRepository<Journal>, private userService: UsersService) {
@@ -575,7 +577,7 @@ export class JournalsService {
             finalData.causesOfNegativity.push({title: catData.category, type: catData.emotion, createdAt: catData.createdAt, percent});
         }
         for (let catData of positiveData) {
-            const percent = Math.round((catData.time_difference/totalSumNegative) * 100);
+            const percent = Math.round((catData.time_difference/totalSumPositive) * 100);
             finalData.causesOfPositivity.push({title: catData.category, type: catData.emotion, createdAt: catData.createdAt, percent});
         }
         finalData.topEmotions = finalData.topEmotions.sort((a,b)=> new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
@@ -659,5 +661,110 @@ export class JournalsService {
             },
             {$unset: ['data.date', 'data._id', 'data.month']},
         ]).toArray();
+    }
+    async moodDistributionAggregationGroupByMonth(user) {
+        const aggregateData = await this.journalMongoRepository.aggregate([
+            {
+                $match: {
+                    createdBy: new ObjectId(user.id)
+                }
+            },
+            {
+                $project: {
+                    month: { "$month": "$createdAt" },
+                    date: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$createdAt"
+                        }
+                    },
+                    _id: 1,
+                    emotions: 1,
+                    category: 1,
+                    createdAt: 1,
+                }
+            },
+            {$sort: {createdAt: -1}},
+            {$group: {_id: '$date', data: {$push: '$$ROOT'}}},
+            {$project: {documentAndNextPostTime: {$zip: {inputs: ['$data', {$concatArrays: [[null], '$data.createdAt']}]}}}},
+            {$unwind: {path: '$documentAndNextPostTime'}},
+            {$replaceWith: {$mergeObjects: [{$arrayElemAt: ['$documentAndNextPostTime', 0]}, {nextPostTime: {$arrayElemAt: ['$documentAndNextPostTime', 1]}}]}},
+            {
+                $set: {
+                    time_difference: {
+                        $dateDiff:
+                            {
+                                startDate: "$createdAt",
+                                endDate: "$nextPostTime",
+                                unit: "minute"
+                            }
+                    }
+                }
+            },
+            {$unset: 'nextPostTime'},
+            {$set: {emotion: {$arrayElemAt: ['$emotions.type', 0]}}},
+            {
+                $set: {
+                    nextDate: {
+                        $add: [{
+                            $dateFromString: {
+                                dateString: "$date"
+                            }
+                        }, 24 * 60 * 60000]
+                    }
+                }
+            },
+            {
+                $set: {
+                    time_difference: { $ifNull: [ "$time_difference", {
+                            $dateDiff:
+                                {
+                                    startDate: "$createdAt",
+                                    endDate: "$nextDate",
+                                    unit: "minute"
+                                }
+                        } ] }
+                }
+            },
+            {$unset: ['nextDate']},
+            {$group: {_id : {
+                        month : {$month : "$createdAt"},
+                        year : {$year :  "$createdAt"}
+                    }, data: {$push: '$$ROOT'}}},
+            {
+                $project: {
+                    _id: 0,
+                    date: "$_id",
+                    data: 1,
+                }
+            },
+            {$unset: ['data.date', 'data._id', 'data.month']},
+        ]).toArray();
+        const finalData = [];
+        for (let dataDetail of aggregateData) {
+            const d = new Date(dataDetail.date.year, (dataDetail.date.month - 1),1);
+            const data: any = {
+                date: monthNames[d.getMonth()] + ' ' + dataDetail.date.year
+            };
+            const groupByEmotion = dataDetail.data.reduce((group, d) => {
+                const { emotion } = d;
+                group[emotion] = group[emotion] ?? [];
+                group[emotion].push(d);
+                return group;
+            }, {});
+            for (const key of Object.keys(groupByEmotion)) {
+                groupByEmotion[key] = groupByEmotion[key].reduce((accumulator, object) => {
+                    return accumulator + object.time_difference;
+                }, 0);
+            }
+            const totalSum = Object.keys(groupByEmotion).reduce((prev, key) => {
+                return prev + groupByEmotion[key];
+            }, 0);
+            data.moodDistribution = Object.keys(groupByEmotion).reduce((prev, key) => {
+                return {...prev, [key]: Math.round((groupByEmotion[key]/totalSum) * 100)}
+            }, {});
+            finalData.push(data);
+        }
+        return finalData;
     }
 }

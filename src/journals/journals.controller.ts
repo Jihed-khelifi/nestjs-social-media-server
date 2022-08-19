@@ -82,6 +82,11 @@ export class JournalsController {
     return this.journalsService.getMinutesOfEmotions(req.user, { "month": +month });
   }
   @UseGuards(JwtAuthGuard)
+  @Get('getMoodDistributionMonthly')
+  async getMoodDistributionMonthly(@Request() req) {
+    return this.journalsService.moodDistributionAggregationGroupByMonth(req.user);
+  }
+  @UseGuards(JwtAuthGuard)
   @Get('getInsightsData/:startDate/:endDate')
   async getInsightsData(@Param('startDate') startDate: string, @Param('endDate') endDate: string, @Request() req) {
     return this.journalsService.getInsightsData(req.user, startDate, endDate);

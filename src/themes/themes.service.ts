@@ -17,9 +17,10 @@ export class ThemesService {
       });
     }
     async createTheme(themeDto: CreateThemeDto, userId) {
-        return this.themeEntityMongoRepository.save({...themeDto, userId});
+
+        return this.themeEntityMongoRepository.save({...themeDto, userId: new ObjectId(userId)});
     }
-    update(themeDto: UpdateThemeDto) {
-        return this.themeEntityMongoRepository.update(new ObjectId(themeDto.id), {...themeDto});
+    update(themeDto: UpdateThemeDto, userId) {
+        return this.themeEntityMongoRepository.update(new ObjectId(themeDto.id), {...themeDto, userId: new ObjectId(userId)});
     }
 }

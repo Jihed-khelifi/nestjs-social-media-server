@@ -20,6 +20,6 @@ export class ThemesController {
   @UseGuards(JwtAuthGuard)
   @Put()
   update(@Request() req, @Body() themeDto: UpdateThemeDto) {
-    return this.themesService.update(themeDto);
+    return this.themesService.update(themeDto, req.user.id);
   }
 }

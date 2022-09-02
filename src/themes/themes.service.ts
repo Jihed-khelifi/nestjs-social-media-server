@@ -10,17 +10,12 @@ import {ObjectId} from 'mongodb';
 export class ThemesService {
     constructor(@InjectRepository(ThemeEntity) private themeEntityMongoRepository: MongoRepository<ThemeEntity>) {}
     async getMyThemes(userId) {
-      return this.themeEntityMongoRepository.find({
-          where: {
-              userId
-          }
-      });
+      return this.themeEntityMongoRepository.findBy({userId: new ObjectId(userId)});
     }
     async createTheme(themeDto: CreateThemeDto, userId) {
-
-        return this.themeEntityMongoRepository.save({...themeDto, userId: new ObjectId(userId)});
+        return this.themeEntityMongoRepository.save({...themeDto, id: new ObjectId(themeDto.id), userId: new ObjectId(userId)});
     }
     update(themeDto: UpdateThemeDto, userId) {
-        return this.themeEntityMongoRepository.update(new ObjectId(themeDto.id), {...themeDto, userId: new ObjectId(userId)});
+        return this.themeEntityMongoRepository.update(new ObjectId(themeDto.id), {...themeDto, id: new ObjectId(themeDto.id), userId: new ObjectId(userId)});
     }
 }

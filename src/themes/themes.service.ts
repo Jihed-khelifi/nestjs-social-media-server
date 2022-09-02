@@ -15,7 +15,7 @@ export class ThemesService {
     async createTheme(themeDto: CreateThemeDto, userId) {
         return this.themeEntityMongoRepository.save({...themeDto, id: new ObjectId(themeDto.id), userId: new ObjectId(userId)});
     }
-    update(themeDto: UpdateThemeDto, userId) {
+    async update(themeDto: UpdateThemeDto, userId) {
         return this.themeEntityMongoRepository.update(new ObjectId(themeDto.id), {...themeDto, id: new ObjectId(themeDto.id), userId: new ObjectId(userId)});
     }
 }

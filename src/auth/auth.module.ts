@@ -7,9 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import {ThemesModule} from "../themes/themes.module";
 
 @Module({
   imports: [
+    ThemesModule,
     forwardRef(() => UsersModule),
     PassportModule,
     JwtModule.register({

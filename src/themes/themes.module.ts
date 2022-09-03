@@ -7,6 +7,7 @@ import {ThemesService} from "./themes.service";
 @Module({
   imports: [TypeOrmModule.forFeature([ThemeEntity])],
   controllers: [ThemesController],
-  providers: [ThemesService]
+  providers: [ThemesService],
+  exports: [ThemesService]
 })
 export class ThemesModule {}

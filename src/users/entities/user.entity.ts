@@ -33,6 +33,9 @@ export class User {
   @Column()
   location: LocationType;
 
+  @ObjectIdColumn({name: 'theme'})
+  theme: ObjectID;
+
   @Column({ default: false })
   isOnline: boolean = false;
 

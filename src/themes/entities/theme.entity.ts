@@ -5,7 +5,7 @@ export class ThemeEntity {
     @ObjectIdColumn()
     id: ObjectID;
 
-    @ObjectIdColumn()
+    @ObjectIdColumn({name: 'userId'})
     userId: ObjectID;
 
     @Column()

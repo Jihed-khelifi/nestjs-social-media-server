@@ -5,13 +5,13 @@ export class CommentEntity {
     @ObjectIdColumn()
     id: ObjectID;
 
-    @ObjectIdColumn()
+    @ObjectIdColumn({name: 'postId'})
     postId: ObjectID;
 
-    @ObjectIdColumn()
+    @ObjectIdColumn({name: 'userId'})
     userId: ObjectID;
 
-    @ObjectIdColumn()
+    @ObjectIdColumn({name: 'commentId'})
     commentId: ObjectID;
 
     @Column()

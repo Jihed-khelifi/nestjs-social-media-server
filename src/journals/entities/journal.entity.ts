@@ -19,7 +19,7 @@ export class Journal {
     @Column()
     type: string;
 
-    @ObjectIdColumn()
+    @ObjectIdColumn({name: 'createdBy'})
     createdBy: ObjectID;
 
     @CreateDateColumn()

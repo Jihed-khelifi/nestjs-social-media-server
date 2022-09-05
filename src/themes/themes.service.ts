@@ -15,7 +15,7 @@ export class ThemesService {
         if (!id) {
             return null;
         }
-        return this.themeEntityMongoRepository.findOneBy({id: new ObjectId(id)});
+        return this.themeEntityMongoRepository.findOneBy({_id: new ObjectId(id)});
     }
 
     async getMyThemes(userId) {
@@ -25,7 +25,6 @@ export class ThemesService {
     async createTheme(themeDto: CreateThemeDto, userId) {
         return this.themeEntityMongoRepository.save({
             ...themeDto,
-            id: new ObjectId(themeDto.id),
             userId: new ObjectId(userId)
         });
     }
@@ -33,7 +32,7 @@ export class ThemesService {
     async update(themeDto: UpdateThemeDto, userId) {
         return this.themeEntityMongoRepository.update(new ObjectId(themeDto.id), {
             ...themeDto,
-            id: new ObjectId(themeDto.id),
+            _id: new ObjectId(themeDto.id),
             userId: new ObjectId(userId)
         });
     }

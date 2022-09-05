@@ -1,5 +1,5 @@
 export class CreateThemeDto {
-    id: string;
+    id?: string;
     name: string;
     bgColor: string;
     borderColor: string;
@@ -14,4 +14,5 @@ export class CreateThemeDto {
     positiveTextColor: string;
     negativeTextColor: string;
     neutralTextColor: string;
+    secondaryBackgroundColor: string;
 }

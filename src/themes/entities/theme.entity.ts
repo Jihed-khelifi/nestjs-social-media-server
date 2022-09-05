@@ -2,8 +2,8 @@ import {Entity, Column, ObjectIdColumn, ObjectID} from 'typeorm';
 
 @Entity('themes')
 export class ThemeEntity {
-    @ObjectIdColumn()
-    id: ObjectID;
+    @ObjectIdColumn({name: '_id'})
+    _id: ObjectID;
 
     @ObjectIdColumn({name: 'userId'})
     userId: ObjectID;
@@ -49,4 +49,7 @@ export class ThemeEntity {
 
     @Column()
     neutralTextColor: string;
+
+    @Column()
+    secondaryBackgroundColor: string;
 }

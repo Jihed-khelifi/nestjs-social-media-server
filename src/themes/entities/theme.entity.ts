@@ -52,4 +52,7 @@ export class ThemeEntity {
 
     @Column()
     secondaryBackgroundColor: string;
+
+    @Column()
+    default: boolean;
 }

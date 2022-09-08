@@ -52,7 +52,8 @@ export class UsersService {
             "primaryColor": "#E79502",
             "primaryTextColor": "#0d0d0d",
             "routineTextColor": "#4D4D4D",
-            "secondaryBackgroundColor": "#ffffff"
+            "secondaryBackgroundColor": "#ffffff",
+            "default": true
         }, user.id);
         user.theme = theme._id;
         await this.updateUser(user.id, {...user});

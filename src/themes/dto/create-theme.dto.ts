@@ -15,4 +15,5 @@ export class CreateThemeDto {
     negativeTextColor: string;
     neutralTextColor: string;
     secondaryBackgroundColor: string;
+    default?: boolean;
 }

@@ -22,6 +22,10 @@ export class ThemesService {
         return this.themeEntityMongoRepository.findBy({userId: new ObjectId(userId)});
     }
 
+    async deleteTheme(themeId) {
+        return this.themeEntityMongoRepository.deleteOne({_id: themeId});
+    }
+
     async createTheme(themeDto: CreateThemeDto, userId) {
         return this.themeEntityMongoRepository.save({
             ...themeDto,

@@ -1,8 +1,9 @@
-import {Body, Controller, Get, Post, Put, Request, UseGuards} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards} from '@nestjs/common';
 import {ThemesService} from "./themes.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import {CreateThemeDto} from "./dto/create-theme.dto";
 import {UpdateThemeDto} from "./dto/update-theme.dto";
+import {ObjectId} from 'mongodb';
 
 @Controller('themes')
 export class ThemesController {
@@ -21,5 +22,10 @@ export class ThemesController {
   @Put()
   update(@Request() req, @Body() themeDto: UpdateThemeDto) {
     return this.themesService.update(themeDto, req.user.id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  deleteTheme(@Param('id') id: string) {
+    return this.themesService.deleteTheme(new ObjectId(id));
   }
 }

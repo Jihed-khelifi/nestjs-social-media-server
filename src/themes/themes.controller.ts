@@ -1,9 +1,19 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards} from '@nestjs/common';
-import {ThemesService} from "./themes.service";
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-import {CreateThemeDto} from "./dto/create-theme.dto";
-import {UpdateThemeDto} from "./dto/update-theme.dto";
-import {ObjectId} from 'mongodb';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { ThemesService } from './themes.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateThemeDto } from './dto/create-theme.dto';
+import { UpdateThemeDto } from './dto/update-theme.dto';
+import { ObjectId } from 'mongodb';
 
 @Controller('themes')
 export class ThemesController {

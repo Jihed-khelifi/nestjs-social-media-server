@@ -38,8 +38,10 @@ export class ThemesService {
   }
 
   async update(themeDto: UpdateThemeDto, userId) {
-    return this.themeEntityMongoRepository.update(new ObjectId(themeDto._id), {
+    const id = new ObjectId(themeDto._id);
+    return this.themeEntityMongoRepository.update(id, {
       ...themeDto,
+      _id: id,
       userId: new ObjectId(userId),
     });
   }

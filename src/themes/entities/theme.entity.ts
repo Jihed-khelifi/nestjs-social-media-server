@@ -1,58 +1,58 @@
-import {Entity, Column, ObjectIdColumn, ObjectID} from 'typeorm';
+import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
 
 @Entity('themes')
 export class ThemeEntity {
-    @ObjectIdColumn({name: '_id'})
-    _id: ObjectID;
+  @ObjectIdColumn({ name: '_id' })
+  _id: ObjectID;
 
-    @ObjectIdColumn({name: 'userId'})
-    userId: ObjectID;
+  @ObjectIdColumn({ name: 'userId' })
+  userId: ObjectID;
 
-    @Column()
-    name: string;
+  @Column()
+  name: string;
 
-    @Column()
-    bgColor: string;
+  @Column()
+  bgColor: string;
 
-    @Column()
-    borderColor: string;
+  @Column()
+  borderColor: string;
 
-    @Column()
-    cardBackground: string;
+  @Column()
+  cardBackground: string;
 
-    @Column()
-    routineTextColor: string;
+  @Column()
+  routineTextColor: string;
 
-    @Column()
-    primaryColor: string;
+  @Column()
+  primaryColor: string;
 
-    @Column()
-    primaryTextColor: string;
+  @Column()
+  primaryTextColor: string;
 
-    @Column()
-    accentColor: string;
+  @Column()
+  accentColor: string;
 
-    @Column()
-    positiveColor: string;
+  @Column()
+  positiveColor: string;
 
-    @Column()
-    negativeColor: string;
+  @Column()
+  negativeColor: string;
 
-    @Column()
-    neutralColor: string;
+  @Column()
+  neutralColor: string;
 
-    @Column()
-    positiveTextColor: string;
+  @Column()
+  positiveTextColor: string;
 
-    @Column()
-    negativeTextColor: string;
+  @Column()
+  negativeTextColor: string;
 
-    @Column()
-    neutralTextColor: string;
+  @Column()
+  neutralTextColor: string;
 
-    @Column()
-    secondaryBackgroundColor: string;
+  @Column()
+  secondaryBackgroundColor: string;
 
-    @Column()
-    default: boolean;
+  @Column()
+  default: boolean;
 }

@@ -33,6 +33,7 @@ export class ThemesService {
   async createTheme(themeDto: CreateThemeDto, userId) {
     return this.themeEntityMongoRepository.save({
       ...themeDto,
+      default: false,
       userId: new ObjectId(userId),
     });
   }
@@ -41,6 +42,7 @@ export class ThemesService {
     const id = new ObjectId(themeDto._id);
     return this.themeEntityMongoRepository.update(id, {
       ...themeDto,
+      default: false,
       _id: id,
       userId: new ObjectId(userId),
     });

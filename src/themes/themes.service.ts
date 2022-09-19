@@ -33,8 +33,14 @@ export class ThemesService {
   async createTheme(themeDto: CreateThemeDto, userId) {
     return this.themeEntityMongoRepository.save({
       ...themeDto,
-      default: false,
       userId: new ObjectId(userId),
+    });
+  }
+
+  async shareTheme(themeId) {
+    const id = new ObjectId(themeId);
+    return this.themeEntityMongoRepository.update(id, {
+      isPublic: true,
     });
   }
 

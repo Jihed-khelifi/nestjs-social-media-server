@@ -53,6 +53,9 @@ export class ThemeEntity {
   @Column()
   secondaryBackgroundColor: string;
 
-  @Column()
+  @Column({ default: true })
   default: boolean;
+
+  @Column({ default: false })
+  isPublic: boolean;
 }

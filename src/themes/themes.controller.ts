@@ -34,6 +34,11 @@ export class ThemesController {
     return this.themesService.update(themeDto, req.user.id);
   }
   @UseGuards(JwtAuthGuard)
+  @Put('shareTheme/:id')
+  makeThemePublic(@Param('id') id: string) {
+    return this.themesService.shareTheme(id);
+  }
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   deleteTheme(@Param('id') id: string) {
     return this.themesService.deleteTheme(new ObjectId(id));

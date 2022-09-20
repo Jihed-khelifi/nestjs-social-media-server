@@ -1,5 +1,5 @@
-import {Entity, Column, ObjectIdColumn, ObjectID} from 'typeorm';
-import {LocationType} from "../dto/create-user.dto";
+import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
+import { LocationType } from '../dto/create-user.dto';
 
 @Entity('users')
 export class User {
@@ -33,16 +33,16 @@ export class User {
   @Column()
   location: LocationType;
 
-  @ObjectIdColumn({name: 'theme'})
+  @ObjectIdColumn({ name: 'theme' })
   theme: ObjectID;
 
   @Column({ default: false })
-  isOnline: boolean = false;
+  isOnline = false;
 
-  @Column({ type: 'timestamp', nullable: true  })
+  @Column({ type: 'timestamp', nullable: true })
   dob?: Date;
 
-  @Column({ type: 'timestamp', nullable: true  })
+  @Column({ type: 'timestamp', nullable: true })
   otpSentAt?: Date;
 
   @Column()

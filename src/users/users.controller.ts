@@ -1,16 +1,18 @@
-import {
-  Body,
-  Controller, Put, Request, UseGuards,
-} from '@nestjs/common';
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-import {UserDobDto} from "./dto/user-dob.dto";
-import {UsersService} from "./users.service";
-import {UpdateUserDto} from "./dto/update-user.dto";
-import {ObjectId} from 'mongodb';
+import { Body, Controller, Put, Request, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UserDobDto } from './dto/user-dob.dto';
+import { UsersService } from './users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ObjectId } from 'mongodb';
+import { ThemesService } from '../themes/themes.service';
+import {raw} from "express";
 
 @Controller('users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private themeService: ThemesService,
+  ) {}
   @UseGuards(JwtAuthGuard)
   @Put()
   updateDob(@Request() req, @Body() userDobDto: UserDobDto) {
@@ -23,10 +25,12 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Put('theme')
-  updateTheme(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+  async updateTheme(@Request() req, @Body() updateUserDto: UpdateUserDto) {
     try {
       updateUserDto.theme = new ObjectId(updateUserDto.theme);
-      return this.userService.updateUser(req.user.id, updateUserDto);
+      const user = await this.userService.updateUser(req.user.id, updateUserDto);
+      await this.themeService.applyTheme(updateUserDto.theme, req.user.id);
+      return user;
     } catch (e) {
       console.log(e);
     }

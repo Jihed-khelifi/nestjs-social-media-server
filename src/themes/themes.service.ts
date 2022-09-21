@@ -117,7 +117,7 @@ export class ThemesService {
   async shareTheme(themeId) {
     const id = new ObjectId(themeId);
     await this.userThemeEntityMongoRepository.updateMany(
-      { themeId },
+      { themeId: new ObjectId(themeId) },
       { $set: { isPublic: true } },
     );
     return this.themeEntityMongoRepository.update(id, {

@@ -24,6 +24,11 @@ export class ThemesController {
     return this.themesService.getMyThemes(req.user.id);
   }
   @UseGuards(JwtAuthGuard)
+  @Get('public')
+  getPublicThemes(@Request() req) {
+    return this.themesService.getPublicThemes(req.user.id);
+  }
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Request() req, @Body() themeDto: CreateThemeDto) {
     return this.themesService.createTheme(themeDto, req.user.id);

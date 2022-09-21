@@ -1,4 +1,11 @@
-import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ObjectIdColumn,
+  ObjectID,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('themes')
 export class ThemeEntity {
@@ -58,4 +65,10 @@ export class ThemeEntity {
 
   @Column({ default: false })
   isPublic: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

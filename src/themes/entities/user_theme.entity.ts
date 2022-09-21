@@ -1,4 +1,4 @@
-import { Entity, ObjectIdColumn, ObjectID } from 'typeorm';
+import { Entity, ObjectIdColumn, ObjectID, Column } from 'typeorm';
 
 @Entity('user_themes')
 export class UserThemeEntity {
@@ -10,4 +10,7 @@ export class UserThemeEntity {
 
   @ObjectIdColumn({ name: 'userId' })
   userId: ObjectID;
+
+  @Column({ default: false })
+  isPublic: boolean;
 }

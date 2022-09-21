@@ -118,7 +118,7 @@ export class ThemesService {
     const id = new ObjectId(themeId);
     await this.userThemeEntityMongoRepository.updateMany(
       { themeId },
-      { isPublic: true },
+      { $set: { isPublic: true } },
     );
     return this.themeEntityMongoRepository.update(id, {
       isPublic: true,

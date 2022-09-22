@@ -5,7 +5,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ObjectId } from 'mongodb';
 import { ThemesService } from '../themes/themes.service';
-import {raw} from "express";
+import { raw } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -28,7 +28,10 @@ export class UsersController {
   async updateTheme(@Request() req, @Body() updateUserDto: UpdateUserDto) {
     try {
       updateUserDto.theme = new ObjectId(updateUserDto.theme);
-      const user = await this.userService.updateUser(req.user.id, updateUserDto);
+      const user = await this.userService.updateUser(
+        req.user.id,
+        updateUserDto,
+      );
       await this.themeService.applyTheme(updateUserDto.theme, req.user.id);
       return user;
     } catch (e) {

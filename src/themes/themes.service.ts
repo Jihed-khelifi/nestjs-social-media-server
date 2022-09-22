@@ -6,6 +6,7 @@ import { CreateThemeDto } from './dto/create-theme.dto';
 import { UpdateThemeDto } from './dto/update-theme.dto';
 import { ObjectId } from 'mongodb';
 import { UserThemeEntity } from './entities/user_theme.entity';
+import * as moment from 'moment';
 
 @Injectable()
 export class ThemesService {
@@ -37,55 +38,108 @@ export class ThemesService {
       userId: new ObjectId(userId),
       default: true,
     });
-    const aggregatedTheme = await this.userThemeEntityMongoRepository
+    const popularThemes = await this.userThemeEntityMongoRepository
+      .aggregate(this.getAggregatePipelines({}))
+      .toArray();
+    const trendingThemes = await this.userThemeEntityMongoRepository
+      .aggregate(
+        this.getAggregatePipelines({
+          createdAt: {
+            $gte: new Date(moment().subtract(3, 'days').format('YYYY/MM/DD')),
+            $lt: new Date(
+              new Date(moment().format('YYYY/MM/DD')).getTime() +
+                60 * 60 * 24 * 1000,
+            ),
+          },
+        }),
+      )
+      .toArray();
+    const newThemes = await this.themeEntityMongoRepository
       .aggregate([
         {
           $match: {
             isPublic: true,
-          },
-        },
-        {
-          $lookup: {
-            from: 'themes',
-            localField: 'themeId',
-            foreignField: '_id',
-            as: 'theme',
-          },
-        },
-        { $unwind: '$theme' },
-        {
-          $group: {
-            _id: '$theme._id',
-            count: { $sum: 1 },
-            theme: { $first: '$theme' },
+            createdAt: {
+              $gte: new Date(moment().format('YYYY/MM/DD')),
+              $lt: new Date(
+                new Date(moment().format('YYYY/MM/DD')).getTime() +
+                  60 * 60 * 24 * 1000,
+              ),
+            },
           },
         },
         {
           $lookup: {
             from: 'users',
-            localField: 'theme.userId',
+            localField: 'userId',
             foreignField: '_id',
-            as: 'theme.user',
+            as: 'user',
           },
         },
-        { $unwind: '$theme.user' },
+        { $unwind: '$user' },
         {
           $project: {
-            'theme.user.password': 0,
-            'theme.user.activationKey': 0,
-            'theme.user.isActive': 0,
-            'theme.user.otpSentAt': 0,
-            'theme.user.otp': 0,
+            'user.password': 0,
+            'user.activationKey': 0,
+            'user.isActive': 0,
+            'user.otpSentAt': 0,
+            'user.otp': 0,
           },
         },
-        { $sort: { count: -1 } },
-        { $limit: 5 },
       ])
       .toArray();
     return {
       continuemDefault,
-      popularThemes: aggregatedTheme,
+      popularThemes: popularThemes,
+      trendingThemes: trendingThemes,
+      newThemes,
     };
+  }
+  getAggregatePipelines(matchCondition) {
+    return [
+      {
+        $match: {
+          isPublic: true,
+          ...matchCondition,
+        },
+      },
+      {
+        $lookup: {
+          from: 'themes',
+          localField: 'themeId',
+          foreignField: '_id',
+          as: 'theme',
+        },
+      },
+      { $unwind: '$theme' },
+      {
+        $group: {
+          _id: '$theme._id',
+          count: { $sum: 1 },
+          theme: { $first: '$theme' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'theme.userId',
+          foreignField: '_id',
+          as: 'theme.user',
+        },
+      },
+      { $unwind: '$theme.user' },
+      {
+        $project: {
+          'theme.user.password': 0,
+          'theme.user.activationKey': 0,
+          'theme.user.isActive': 0,
+          'theme.user.otpSentAt': 0,
+          'theme.user.otp': 0,
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ];
   }
   async applyTheme(themeId, userId) {
     const theme = await this.themeEntityMongoRepository.findOneBy({
@@ -93,17 +147,19 @@ export class ThemesService {
     });
     const userTheme = await this.userThemeEntityMongoRepository.findOneBy({
       userId: new ObjectId(userId),
+      themeId: new ObjectId(themeId),
     });
     if (userTheme) {
-      return this.userThemeEntityMongoRepository.update(userTheme._id, {
-        themeId,
+      return this.userThemeEntityMongoRepository.update(themeId, {
         isPublic: theme.isPublic,
+        createdAt: new Date(),
       });
     } else {
       return this.userThemeEntityMongoRepository.save({
         userId,
         themeId,
         isPublic: theme.isPublic,
+        createdAt: new Date(),
       });
     }
   }
@@ -111,6 +167,7 @@ export class ThemesService {
     return this.themeEntityMongoRepository.save({
       ...themeDto,
       userId: new ObjectId(userId),
+      createdAt: new Date(),
     });
   }
 

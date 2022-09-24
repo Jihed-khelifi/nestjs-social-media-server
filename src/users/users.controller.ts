@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ObjectId } from 'mongodb';
 import { ThemesService } from '../themes/themes.service';
 import { raw } from 'express';
+import {UserUsernameDto} from "./dto/user-username.dto";
 
 @Controller('users')
 export class UsersController {
@@ -19,6 +20,15 @@ export class UsersController {
     try {
       userDobDto.dob = new Date(userDobDto.dob);
       return this.userService.updateDob(req.user.id, userDobDto);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put('username')
+  updateUsername(@Request() req, @Body() userUsernameDto: UserUsernameDto) {
+    try {
+      return this.userService.updateUser(req.user.id, userUsernameDto);
     } catch (e) {
       console.log(e);
     }

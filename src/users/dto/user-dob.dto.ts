@@ -1,4 +1,3 @@
 export class UserDobDto {
-    dob: Date;
+  dob: Date;
 }
-

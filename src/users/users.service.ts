@@ -136,10 +136,12 @@ export class UsersService {
     id: ObjectId,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    const user = await this.usersRepository.findBy({
-      username: updateUserDto.username,
+    const user = await this.usersRepository.find({
+      where: {
+        username: updateUserDto.username,
+      },
     });
-    if (user) {
+    if (user.length) {
       throw new HttpException(
         'User with same username already exists.',
         HttpStatus.BAD_GATEWAY,

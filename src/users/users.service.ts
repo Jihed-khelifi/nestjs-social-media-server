@@ -132,6 +132,22 @@ export class UsersService {
     return await this.usersRepository.findOneById(id);
   }
 
+  async updateUsername(
+    id: ObjectId,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    const user = await this.usersRepository.findBy({
+      username: updateUserDto.username,
+    });
+    if (user) {
+      throw new HttpException(
+        'User with same username already exists.',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+    await this.usersRepository.update({ id }, { ...updateUserDto });
+    return await this.usersRepository.findOneById(id);
+  }
   async updateUser(id: ObjectId, updateUserDto: UpdateUserDto): Promise<User> {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);

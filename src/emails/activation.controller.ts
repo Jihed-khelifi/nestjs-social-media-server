@@ -4,7 +4,8 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Param, Post,
+  Param,
+  Post,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { EmailService } from './email.service';
@@ -18,28 +19,23 @@ export class ActivationController {
     private emailService: EmailService,
   ) {}
   @Post('verify-account')
-  async verifyAccount(@Body() body: {otp: string, userId: string}) {
+  async verifyAccount(@Body() body: { otp: string; userId: string }) {
     if (body.otp) {
-      const user = await this.userService.findOne(
-        new ObjectId(body.userId),
-      );
+      const user = await this.userService.findOne(new ObjectId(body.userId));
       if (!user) {
-        throw new HttpException(
-          'Invalid User Id',
-          HttpStatus.UNAUTHORIZED,
-        );
+        throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
       } else {
         if (user.isActive) {
           return {
             userActivated: true,
-            error: false
-          }
+            error: false,
+          };
         }
         await this.userService.activateUser(user.id);
         return {
           userActivated: true,
-          error: false
-        }
+          error: false,
+        };
       }
     } else {
       throw new HttpException('Invalid Request', HttpStatus.UNAUTHORIZED);
@@ -48,6 +44,6 @@ export class ActivationController {
   @Get('get-activation-email/:id')
   async getActivationEmail(@Param('id') id: string) {
     const user = await this.userService.findOne(new ObjectId(id));
-    await this.userService.sendOtp(user)
+    await this.userService.sendOtp(user);
   }
 }

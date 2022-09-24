@@ -28,7 +28,7 @@ export class UsersController {
   @Put('username')
   updateUsername(@Request() req, @Body() userUsernameDto: UserUsernameDto) {
     try {
-      return this.userService.updateUser(req.user.id, userUsernameDto);
+      return this.userService.updateUsername(req.user.id, userUsernameDto);
     } catch (e) {
       console.log(e);
     }

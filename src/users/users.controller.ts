@@ -1,4 +1,4 @@
-import { Body, Controller, Put, Request, UseGuards } from '@nestjs/common';
+import {Body, Controller, Delete, Put, Request, UseGuards} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserDobDto } from './dto/user-dob.dto';
 import { UsersService } from './users.service';
@@ -47,5 +47,10 @@ export class UsersController {
     } catch (e) {
       console.log(e);
     }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Delete()
+  async deleteAccount(@Request() req) {
+    return this.userService.deleteAccount(req.user.id);
   }
 }

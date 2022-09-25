@@ -11,6 +11,9 @@ import { AuthService } from '../auth/auth.service';
 import { UserDobDto } from './dto/user-dob.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ThemesService } from '../themes/themes.service';
+import { DeleteUserEntity } from './entities/delete_user.entity';
+import * as moment from 'moment';
+import { Cron } from '@nestjs/schedule';
 
 dotEnv.config();
 
@@ -19,6 +22,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: MongoRepository<User>,
+    @InjectRepository(DeleteUserEntity)
+    private deleteUserEntityMongoRepository: MongoRepository<DeleteUserEntity>,
     private emailService: EmailService,
     private authService: AuthService,
     private themeService: ThemesService,
@@ -154,7 +159,37 @@ export class UsersService {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);
   }
-
+  async deleteAccount(id: ObjectId): Promise<User> {
+    const user = await this.usersRepository.findOneById(id);
+    await this.deleteUserEntityMongoRepository.save({
+      userId: id,
+      deleted: false,
+      deleteRequestedOn: new Date(),
+      user,
+      toBeDeletedOn: moment().add(30, 'days').endOf('day').toDate(),
+    });
+    await this.usersRepository.update(id, { deleteRequested: true });
+    return user;
+  }
+  @Cron('* * * * *')
+  async deleteScheduler() {
+    const deleteRequested = await this.deleteUserEntityMongoRepository.findBy({
+      deleted: false,
+      toBeDeletedOn: {
+        $gte: new Date(moment().format('YYYY/MM/DD')),
+        $lt: new Date(
+          new Date(moment().format('YYYY/MM/DD')).getTime() +
+            60 * 60 * 24 * 1000,
+        ),
+      },
+    });
+    for (const user of deleteRequested) {
+      await this.usersRepository.delete(new ObjectId(user.userId));
+      await this.deleteUserEntityMongoRepository.update(user.id, {
+        deleted: true,
+      });
+    }
+  }
   async activateUser(id: ObjectId) {
     const user = await this.usersRepository.findOneById(id);
     await this.usersRepository.update({ id }, { isActive: true });

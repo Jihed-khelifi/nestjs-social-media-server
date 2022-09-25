@@ -17,6 +17,8 @@ import { CommentEntity } from './comments/entities/comment.entity';
 import { ThemesModule } from './themes/themes.module';
 import { ThemeEntity } from './themes/entities/theme.entity';
 import { UserThemeEntity } from './themes/entities/user_theme.entity';
+import { DeleteUserEntity } from './users/entities/delete_user.entity';
+import {ScheduleModule} from "@nestjs/schedule";
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { UserThemeEntity } from './themes/entities/user_theme.entity';
         CommentEntity,
         ThemeEntity,
         UserThemeEntity,
+        DeleteUserEntity,
       ],
       ssl: false,
       useUnifiedTopology: true,
@@ -46,6 +49,7 @@ import { UserThemeEntity } from './themes/entities/user_theme.entity';
     AuthModule,
     EmailsModule,
     ThemesModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

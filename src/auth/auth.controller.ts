@@ -10,11 +10,14 @@ import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
-import {ThemesService} from "../themes/themes.service";
+import { ThemesService } from '../themes/themes.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private themeService: ThemesService, private usersService: UsersService) {}
+  constructor(
+    private themeService: ThemesService,
+    private usersService: UsersService,
+  ) {}
   @UseGuards(LocalAuthGuard)
   @Post('/login')
   async login(@Request() req) {

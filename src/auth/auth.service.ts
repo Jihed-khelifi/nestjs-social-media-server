@@ -1,4 +1,10 @@
-import {forwardRef, HttpException, HttpStatus, Inject, Injectable} from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
@@ -31,6 +37,7 @@ export class AuthService {
       userName: user.name,
       email: user.email,
       userId: user.id,
+      deleteRequested: user.deleteRequested,
       message: 'User logged in successfully.',
     };
   }

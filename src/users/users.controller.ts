@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Put, Request, UseGuards} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Put, Request, UseGuards} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserDobDto } from './dto/user-dob.dto';
 import { UsersService } from './users.service';
@@ -23,6 +23,11 @@ export class UsersController {
     } catch (e) {
       console.log(e);
     }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('recoverAccount')
+  recoverAccount(@Request() req) {
+    return this.userService.recoverAccount(req.user.id);
   }
   @UseGuards(JwtAuthGuard)
   @Put('username')

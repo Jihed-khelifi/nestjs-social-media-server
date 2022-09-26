@@ -171,6 +171,13 @@ export class UsersService {
     await this.usersRepository.update(id, { deleteRequested: true });
     return user;
   }
+  async recoverAccount(id: ObjectId): Promise<User> {
+    await this.deleteUserEntityMongoRepository.delete({
+      userId: id,
+    });
+    await this.usersRepository.update(id, { deleteRequested: false });
+    return this.usersRepository.findOneById(id);
+  }
   @Cron('* * * * *')
   async deleteScheduler() {
     const deleteRequested = await this.deleteUserEntityMongoRepository.findBy({

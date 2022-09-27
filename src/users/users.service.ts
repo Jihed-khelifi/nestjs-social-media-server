@@ -178,6 +178,11 @@ export class UsersService {
     await this.usersRepository.update(id, { deleteRequested: false });
     return this.usersRepository.findOneById(id);
   }
+  async getDeleteRequest(id: ObjectId): Promise<DeleteUserEntity> {
+    return this.deleteUserEntityMongoRepository.findOneBy({
+      userId: id,
+    });
+  }
   @Cron('* * * * *')
   async deleteScheduler() {
     const deleteRequested = await this.deleteUserEntityMongoRepository.findBy({

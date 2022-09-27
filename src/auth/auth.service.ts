@@ -30,6 +30,12 @@ export class AuthService {
     if (!user.isActive) {
       await this.usersService.sendOtp(user);
     }
+    let data = {
+      deleteRequestedOn: null,
+    };
+    if (user.deleteRequested) {
+      data = await this.usersService.getDeleteRequest(user.id);
+    }
     return {
       access_token: this.jwtService.sign(payload),
       isActive: user.isActive,
@@ -38,6 +44,7 @@ export class AuthService {
       email: user.email,
       userId: user.id,
       deleteRequested: user.deleteRequested,
+      deleteRequestedOn: data.deleteRequestedOn,
       message: 'User logged in successfully.',
     };
   }

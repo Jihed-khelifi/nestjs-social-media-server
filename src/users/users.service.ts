@@ -159,9 +159,9 @@ export class UsersService {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);
   }
-  async deleteAccount(id: ObjectId): Promise<User> {
+  async deleteAccount(id: ObjectId): Promise<DeleteUserEntity> {
     const user = await this.usersRepository.findOneById(id);
-    await this.deleteUserEntityMongoRepository.save({
+    const deleteUserEntity = await this.deleteUserEntityMongoRepository.save({
       userId: id,
       deleted: false,
       deleteRequestedOn: new Date(),
@@ -169,7 +169,7 @@ export class UsersService {
       toBeDeletedOn: moment().add(30, 'days').endOf('day').toDate(),
     });
     await this.usersRepository.update(id, { deleteRequested: true });
-    return user;
+    return deleteUserEntity;
   }
   async recoverAccount(id: ObjectId): Promise<User> {
     await this.deleteUserEntityMongoRepository.delete({

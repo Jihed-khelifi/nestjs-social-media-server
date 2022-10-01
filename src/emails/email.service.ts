@@ -8,15 +8,15 @@ export class EmailService {
   constructor() {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   }
-  async sendActivationEmail(user, otp) {
+  async sendOtpEmail(template, subject, user, otp) {
     if (user && !user.isActive) {
-      const finalHtml = await this.getInterpolatedEmailContent('welcome.html', {
+      const finalHtml = await this.getInterpolatedEmailContent(template, {
         otp,
       });
       const msg = {
         to: user.email,
         from: 'support@continuem.co',
-        subject: 'Welcome to Continuem;',
+        subject: subject,
         html: finalHtml,
       };
       await this.sendEmail(msg);
@@ -28,7 +28,6 @@ export class EmailService {
         await sgMail.send(msg);
       } catch (error) {
         console.error(error);
-
         if (error.response) {
           console.error(error.response.body);
         }

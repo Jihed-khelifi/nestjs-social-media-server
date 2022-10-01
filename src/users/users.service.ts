@@ -71,7 +71,22 @@ export class UsersService {
 
   async sendOtp(user) {
     const otp = randomstring.generate({ length: 6, charset: 'numeric' });
-    await this.emailService.sendActivationEmail(user, otp);
+    await this.emailService.sendOtpEmail(
+      'welcome.html',
+      'Welcome to Continuem;',
+      user,
+      otp,
+    );
+    await this.usersRepository.update(user.id, { otp, otpSentAt: new Date() });
+  }
+  async sendChangePasswordOtp(user) {
+    const otp = randomstring.generate({ length: 6, charset: 'numeric' });
+    await this.emailService.sendOtpEmail(
+      'change-password.html',
+      'Continuem; Password Change',
+      user,
+      otp,
+    );
     await this.usersRepository.update(user.id, { otp, otpSentAt: new Date() });
   }
 

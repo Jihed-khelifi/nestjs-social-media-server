@@ -1,12 +1,21 @@
-import {Body, Controller, Delete, Get, Put, Request, UseGuards} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Put,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserDobDto } from './dto/user-dob.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ObjectId } from 'mongodb';
 import { ThemesService } from '../themes/themes.service';
-import { raw } from 'express';
-import {UserUsernameDto} from "./dto/user-username.dto";
+import { UserUsernameDto } from './dto/user-username.dto';
 
 @Controller('users')
 export class UsersController {
@@ -52,6 +61,14 @@ export class UsersController {
     } catch (e) {
       console.log(e);
     }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put('changePassword')
+  async changePassword(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    if (req.user.otpVerified) {
+      return await this.userService.updateUser(req.user.id, updateUserDto);
+    }
+    throw new HttpException('Action not permitted.', HttpStatus.BAD_REQUEST);
   }
   @UseGuards(JwtAuthGuard)
   @Delete()

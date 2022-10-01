@@ -22,6 +22,9 @@ export class User {
   otp: string;
 
   @Column()
+  otpVerified: boolean;
+
+  @Column()
   country: string;
 
   @Column()

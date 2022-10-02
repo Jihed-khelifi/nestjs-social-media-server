@@ -18,7 +18,8 @@ import { ThemesModule } from './themes/themes.module';
 import { ThemeEntity } from './themes/entities/theme.entity';
 import { UserThemeEntity } from './themes/entities/user_theme.entity';
 import { DeleteUserEntity } from './users/entities/delete_user.entity';
-import {ScheduleModule} from "@nestjs/schedule";
+import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import {ScheduleModule} from "@nestjs/schedule";
     AuthModule,
     EmailsModule,
     ThemesModule,
+    NotificationsModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],

@@ -1,5 +1,6 @@
 export class CreateCommentDto {
-    comment: string;
-    postId: string;
-    commentId?: string;
+  comment: string;
+  postId: string;
+  mentions?: string[];
+  commentId?: string;
 }

@@ -17,6 +17,9 @@ export class NotificationEntity {
   @ObjectIdColumn({ name: 'userId' })
   userId: ObjectID;
 
+  @ObjectIdColumn({ name: 'postId' })
+  postId: ObjectID;
+
   @Column()
   type: string;
 

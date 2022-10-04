@@ -20,6 +20,7 @@ import { UserThemeEntity } from './themes/entities/user_theme.entity';
 import { DeleteUserEntity } from './users/entities/delete_user.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsModule } from './notifications/notifications.module';
+import { NotificationEntity } from './notifications/entities/notification.entity';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         ThemeEntity,
         UserThemeEntity,
         DeleteUserEntity,
+        NotificationEntity,
       ],
       ssl: false,
       useUnifiedTopology: true,

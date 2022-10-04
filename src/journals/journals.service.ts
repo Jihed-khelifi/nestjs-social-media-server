@@ -57,6 +57,11 @@ export class JournalsService {
       type: 'public',
     });
   }
+  getPostById(id) {
+    return this.journalMongoRepository.findOneBy({
+      id: new ObjectId(id),
+    });
+  }
 
   async delete(id, user: User) {
     const journal = await this.journalMongoRepository.findOne(id);

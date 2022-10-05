@@ -58,9 +58,7 @@ export class JournalsService {
     });
   }
   getPostById(id) {
-    return this.journalMongoRepository.findOneBy({
-      id: new ObjectId(id),
-    });
+    return this.journalMongoRepository.findOneById(id);
   }
 
   async delete(id, user: User) {

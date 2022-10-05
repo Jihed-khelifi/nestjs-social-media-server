@@ -41,6 +41,7 @@ export class NotificationsService {
   ) {
     const post = await this.journalsService.getPostById(postId);
     const user = await this.usersService.findOne(new ObjectId(userId));
+    console.log(post);
     if (
       post.createdBy.toString() !== userId.toString() &&
       !mentions.includes(post.createdBy.toString())

@@ -1,16 +1,31 @@
-import {Controller, Get, Post, Body, Request, UseGuards, Param, Put, Delete, Ip, Query} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Request,
+  UseGuards,
+  Param,
+  Put,
+  Delete,
+  Ip,
+  Query,
+} from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { CreateJournalDto } from './dto/create-journal.dto';
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ObjectId } from 'mongodb';
-import {UpdateJournalDto} from "./dto/update-journal.dto";
-import {RealIP} from "nestjs-real-ip";
-import {UsersService} from "../users/users.service";
+import { UpdateJournalDto } from './dto/update-journal.dto';
+import { RealIP } from 'nestjs-real-ip';
+import { UsersService } from '../users/users.service';
 const axios = require('axios').default;
 
 @Controller('journals')
 export class JournalsController {
-  constructor(private readonly journalsService: JournalsService, private userService: UsersService) {}
+  constructor(
+    private readonly journalsService: JournalsService,
+    private userService: UsersService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -27,7 +42,7 @@ export class JournalsController {
   @Get('getSingle/:postId')
   getPostById(@Param('postId') postId: string) {
     return this.journalsService.getPostsByCondition({
-      _id: new ObjectId(postId)
+      _id: new ObjectId(postId),
     });
   }
   @UseGuards(JwtAuthGuard)
@@ -38,18 +53,23 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getMyAllDataByDate(@Request() req) {
-    let user = req.user;
+    const user = req.user;
     return this.journalsService.minePosts(user);
   }
   @UseGuards(JwtAuthGuard)
   @Get('community/:type')
-  async getCommunityPosts(@Param('type') type: string, @Query('page') page: number = 0, @Request() req, @RealIP() ip: string) {
+  async getCommunityPosts(
+    @Param('type') type: string,
+    @Query('page') page = 0,
+    @Request() req,
+    @RealIP() ip: string,
+  ) {
     let user = req.user;
     if (type === 'country' && !req.user.country) {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
-      await axios.get(api).then(async res => {
+      await axios.get(api).then(async (res) => {
         if (res.status === 200 || res.status === 201) {
-          const {city, country, region, latitude, longitude} = res.data;
+          const { city, country, region, latitude, longitude } = res.data;
           user = await this.userService.updateUser(new ObjectId(user.id), {
             ...{
               city,
@@ -57,10 +77,10 @@ export class JournalsController {
               state: region,
               location: {
                 type: 'Point',
-                coordinates: [longitude, latitude]
-              }
-            }
-          })
+                coordinates: [longitude, latitude],
+              },
+            },
+          });
         }
       });
     }
@@ -68,8 +88,13 @@ export class JournalsController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('changeUserOnlineStatus/:online')
-  async changeUserOnlineStatus(@Param('online') online: string, @Request() req) {
-    await this.userService.updateUser(new ObjectId(req.user.id), {isOnline: (online === "true")});
+  async changeUserOnlineStatus(
+    @Param('online') online: string,
+    @Request() req,
+  ) {
+    await this.userService.updateUser(new ObjectId(req.user.id), {
+      isOnline: online === 'true',
+    });
   }
   @UseGuards(JwtAuthGuard)
   @Get('getMyPostsOfDate/:date')
@@ -79,16 +104,24 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get('getMinutesOfEmotions/:month')
   async getMinutesOfEmotions(@Param('month') month: number, @Request() req) {
-    return this.journalsService.getMinutesOfEmotions(req.user, { "month": +month });
+    return this.journalsService.getMinutesOfEmotions(req.user, {
+      month: +month,
+    });
   }
   @UseGuards(JwtAuthGuard)
   @Get('getMoodDistributionMonthly')
   async getMoodDistributionMonthly(@Request() req) {
-    return this.journalsService.moodDistributionAggregationGroupByMonth(req.user);
+    return this.journalsService.moodDistributionAggregationGroupByMonth(
+      req.user,
+    );
   }
   @UseGuards(JwtAuthGuard)
   @Get('getInsightsData/:startDate/:endDate')
-  async getInsightsData(@Param('startDate') startDate: string, @Param('endDate') endDate: string, @Request() req) {
+  async getInsightsData(
+    @Param('startDate') startDate: string,
+    @Param('endDate') endDate: string,
+    @Request() req,
+  ) {
     return this.journalsService.getInsightsData(req.user, startDate, endDate);
   }
 }

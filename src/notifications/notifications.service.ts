@@ -39,7 +39,10 @@ export class NotificationsService {
     userId,
     mentions: string[],
   ) {
-    const post = await this.journalsService.getPostById(postId);
+    const posts = await this.journalsService.getPostsByCondition({
+      _id: postId,
+    });
+    const post = posts[0];
     const user = await this.usersService.findOne(new ObjectId(userId));
     console.log(post);
     if (
@@ -57,7 +60,7 @@ export class NotificationsService {
       await this.sendNotification(
         notification.notificationMessage,
         [post.createdBy.toString()],
-        postId,
+        post,
       );
       await this.notificationEntityMongoRepository.save(notification);
     }
@@ -74,14 +77,14 @@ export class NotificationsService {
         await this.sendNotification(
           mentionNotification.notificationMessage,
           [mention.toString()],
-          postId,
+          post,
         );
         await this.notificationEntityMongoRepository.save(mentionNotification);
       }
     }
   }
 
-  async sendNotification(message, userIds, postId) {
+  async sendNotification(message, userIds, post) {
     const notification = new OneSignal.Notification();
     notification.app_id = ONESIGNAL_APP_ID;
     notification.include_external_user_ids = userIds;
@@ -89,7 +92,7 @@ export class NotificationsService {
       en: message,
     };
     notification.data = {
-      postId: postId.toString(),
+      ...post,
     };
     await this.client.createNotification(notification);
   }

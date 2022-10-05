@@ -17,7 +17,9 @@ export class CommentsService {
     const data: any = {
       comment: commentDto.comment,
       postId: new ObjectId(commentDto.postId),
-      mentions: commentDto.mentions.map((id) => new ObjectId(id)),
+      mentions: commentDto.mentions
+        ? commentDto.mentions.map((id) => new ObjectId(id))
+        : [],
       userId: new ObjectId(userId),
     };
     if (commentDto.commentId) {

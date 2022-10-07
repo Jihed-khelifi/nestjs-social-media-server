@@ -33,6 +33,12 @@ export class NotificationsService {
     });
     this.client = new OneSignal.DefaultApi(configuration);
   }
+  public async readNotification(id, userId) {
+    await this.notificationEntityMongoRepository.update(
+      { id: new ObjectId(id), userId },
+      { read: true },
+    );
+  }
   public async getMyNotification(userId) {
     const read = await this.notificationEntityMongoRepository.find({
       where: {

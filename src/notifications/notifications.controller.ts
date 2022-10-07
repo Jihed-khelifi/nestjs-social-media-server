@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
+import {Controller, Get, Param, Put, Request, UseGuards} from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -9,5 +9,10 @@ export class NotificationsController {
   @Get('')
   getPostComments(@Request() req) {
     return this.notificationsService.getMyNotification(req.user.id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  readNotification(@Request() req, @Param('id') id: string) {
+    return this.notificationsService.readNotification(id, req.user.id);
   }
 }

@@ -33,7 +33,24 @@ export class NotificationsService {
     });
     this.client = new OneSignal.DefaultApi(configuration);
   }
-
+  public async getMyNotification(userId) {
+    const read = await this.notificationEntityMongoRepository.find({
+      where: {
+        userId,
+        read: true,
+      },
+    });
+    const unread = await this.notificationEntityMongoRepository.find({
+      where: {
+        userId,
+        read: false,
+      },
+    });
+    return {
+      read,
+      unread,
+    };
+  }
   public async createCommentOnPostNotification(
     postId,
     userId,
@@ -44,7 +61,6 @@ export class NotificationsService {
     });
     const post = posts[0];
     const user = await this.usersService.findOne(new ObjectId(userId));
-    console.log(post);
     if (
       post.createdBy.toString() !== userId.toString() &&
       !mentions.includes(post.createdBy.toString())

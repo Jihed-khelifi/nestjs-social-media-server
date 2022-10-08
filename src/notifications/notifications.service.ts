@@ -39,23 +39,165 @@ export class NotificationsService {
       { read: true },
     );
   }
-  public async getMyNotification(userId) {
-    const read = await this.notificationEntityMongoRepository.find({
-      where: {
-        userId,
-        read: true,
-      },
-    });
-    const unread = await this.notificationEntityMongoRepository.find({
-      where: {
-        userId,
-        read: false,
-      },
-    });
-    return {
-      read,
-      unread,
-    };
+  public async getMyNotification(status, userId) {
+    let read = true;
+    if (status === 'unread') {
+      read = false;
+    }
+    return this.notificationEntityMongoRepository
+      .aggregate([
+        {
+          $match: {
+            userId,
+            read,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: '$user' },
+        {
+          $lookup: {
+            from: 'journals',
+            localField: 'postId',
+            foreignField: '_id',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'createdBy',
+                  foreignField: '_id',
+                  as: 'user',
+                },
+              },
+              { $unwind: '$user' },
+              {
+                $project: {
+                  'user.password': 0,
+                  'user.activationKey': 0,
+                  'user.otp': 0,
+                  'user.otpSentAt': 0,
+                  'user.isActive': 0,
+                },
+              },
+              {
+                $lookup: {
+                  from: 'comments',
+                  localField: '_id',
+                  foreignField: 'postId',
+                  pipeline: [
+                    {
+                      $match: {
+                        commentId: null,
+                      },
+                    },
+                    {
+                      $lookup: {
+                        from: 'comments',
+                        localField: '_id',
+                        foreignField: 'commentId',
+                        pipeline: [
+                          {
+                            $lookup: {
+                              from: 'users',
+                              localField: 'userId',
+                              foreignField: '_id',
+                              pipeline: [
+                                {
+                                  $lookup: {
+                                    from: 'journals',
+                                    localField: '_id',
+                                    foreignField: 'createdBy',
+                                    pipeline: [
+                                      { $sort: { createdAt: -1 } },
+                                      {
+                                        $limit: 1,
+                                      },
+                                    ],
+                                    as: 'last_journal',
+                                  },
+                                },
+                                { $unwind: '$last_journal' },
+                              ],
+                              as: 'user',
+                            },
+                          },
+                          { $unwind: '$user' },
+                          {
+                            $project: {
+                              'user.password': 0,
+                              'user.activationKey': 0,
+                              'user.isActive': 0,
+                              'user.otpSentAt': 0,
+                              'user.otp': 0,
+                            },
+                          },
+                        ],
+                        as: 'replies',
+                      },
+                    },
+                    {
+                      $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        pipeline: [
+                          {
+                            $lookup: {
+                              from: 'journals',
+                              localField: '_id',
+                              foreignField: 'createdBy',
+                              pipeline: [
+                                { $sort: { createdAt: -1 } },
+                                {
+                                  $limit: 1,
+                                },
+                              ],
+                              as: 'last_journal',
+                            },
+                          },
+                          { $unwind: '$last_journal' },
+                        ],
+                        as: 'user',
+                      },
+                    },
+                    { $unwind: '$user' },
+                    {
+                      $project: {
+                        'user.password': 0,
+                        'user.activationKey': 0,
+                        'user.otp': 0,
+                        'user.otpSentAt': 0,
+                        'user.isActive': 0,
+                      },
+                    },
+                    { $sort: { createdAt: -1 } },
+                  ],
+                  as: 'comments',
+                },
+              },
+            ],
+            as: 'post',
+          },
+        },
+        { $unwind: '$post' },
+        {
+          $project: {
+            'user.password': 0,
+            'user.activationKey': 0,
+            'user.otp': 0,
+            'user.otpSentAt': 0,
+            'user.isActive': 0,
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ])
+      .toArray();
   }
   public async createCommentOnPostNotification(
     postId,

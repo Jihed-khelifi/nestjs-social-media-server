@@ -9,7 +9,7 @@ export class EmailService {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   }
   async sendOtpEmail(template, subject, user, otp) {
-    if (user && !user.isActive) {
+    if (user) {
       const finalHtml = await this.getInterpolatedEmailContent(template, {
         otp,
       });

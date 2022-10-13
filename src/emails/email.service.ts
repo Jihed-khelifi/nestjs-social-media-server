@@ -15,7 +15,7 @@ export class EmailService {
       });
       const msg = {
         to: user.email,
-        from: 'support@continuem.co',
+        from: 'dev@continuem.co',
         subject: subject,
         html: finalHtml,
       };

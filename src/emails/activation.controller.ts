@@ -58,7 +58,7 @@ export class ActivationController {
       } else {
         if (user.otp === body.otp) {
           await this.userService.updateUser(user.id, { otpVerified: true });
-          return this.hashCode(user.otp);
+          return { hash: this.hashCode(user.otp) };
         } else {
           throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
         }
@@ -69,9 +69,9 @@ export class ActivationController {
   }
   @Post('change-password')
   async changePassword(
-    @Body() body: { password: string; hash: string; userId: string },
+    @Body() body: { password: string; hash: string; email: string },
   ) {
-    const user = await this.userService.findOne(new ObjectId(body.userId));
+    const user = await this.userService.findByEmail(body.email);
     if (!user) {
       throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
     } else {

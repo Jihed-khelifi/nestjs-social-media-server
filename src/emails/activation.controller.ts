@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { EmailService } from './email.service';
-import * as randomstring from 'randomstring';
 import { ObjectId } from 'mongodb';
 
 @Controller()
@@ -41,6 +40,15 @@ export class ActivationController {
       throw new HttpException('Invalid Request', HttpStatus.UNAUTHORIZED);
     }
   }
+  hashCode = (str) => {
+    return str
+      .split('')
+      .reduce(
+        (prevHash, currVal) =>
+          ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0,
+        0,
+      );
+  };
   @Post('verify-change-password-otp')
   async verifyChangePasswordOtp(@Body() body: { otp: string; userId: string }) {
     if (body.otp) {
@@ -48,10 +56,30 @@ export class ActivationController {
       if (!user) {
         throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
       } else {
-        await this.userService.updateUser(user.id, { otpVerified: true });
+        if (user.otp === body.otp) {
+          await this.userService.updateUser(user.id, { otpVerified: true });
+          return this.hashCode(user.otp);
+        } else {
+          throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+        }
       }
     } else {
       throw new HttpException('Invalid Request', HttpStatus.UNAUTHORIZED);
+    }
+  }
+  @Post('change-password')
+  async changePassword(
+    @Body() body: { password: string; hash: string; userId: string },
+  ) {
+    const user = await this.userService.findOne(new ObjectId(body.userId));
+    if (!user) {
+      throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
+    } else {
+      if (this.hashCode(user.otp) === body.hash) {
+        await this.userService.updateUser(user.id, { password: body.password });
+      } else {
+        throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+      }
     }
   }
   @Get('get-activation-email/:id')

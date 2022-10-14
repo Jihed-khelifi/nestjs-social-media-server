@@ -75,7 +75,7 @@ export class ActivationController {
     if (!user) {
       throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
     } else {
-      if (this.hashCode(user.otp) === body.hash.toString()) {
+      if (this.hashCode(user.otp).toString() === body.hash) {
         await this.userService.updateUser(user.id, { password: body.password });
       } else {
         throw new HttpException('Invalid Hash', HttpStatus.BAD_REQUEST);

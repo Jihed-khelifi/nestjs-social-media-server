@@ -50,9 +50,9 @@ export class ActivationController {
       );
   };
   @Post('verify-change-password-otp')
-  async verifyChangePasswordOtp(@Body() body: { otp: string; userId: string }) {
+  async verifyChangePasswordOtp(@Body() body: { otp: string; email: string }) {
     if (body.otp) {
-      const user = await this.userService.findOne(new ObjectId(body.userId));
+      const user = await this.userService.findByEmail(body.email);
       if (!user) {
         throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
       } else {

@@ -33,6 +33,7 @@ export class ThemesService {
   async deleteTheme(themeId) {
     return this.themeEntityMongoRepository.deleteOne({ _id: themeId });
   }
+
   async getPublicThemes(userId) {
     const continuemDefault = await this.themeEntityMongoRepository.findOneBy({
       userId: new ObjectId(userId),
@@ -95,6 +96,7 @@ export class ThemesService {
       newThemes,
     };
   }
+
   getAggregatePipelines(matchCondition) {
     return [
       {
@@ -141,6 +143,7 @@ export class ThemesService {
       { $limit: 5 },
     ];
   }
+
   async applyTheme(themeId, userId) {
     const theme = await this.themeEntityMongoRepository.findOneBy({
       _id: themeId,
@@ -163,6 +166,7 @@ export class ThemesService {
       });
     }
   }
+
   async createTheme(themeDto: CreateThemeDto, userId) {
     return this.themeEntityMongoRepository.save({
       ...themeDto,
@@ -171,11 +175,20 @@ export class ThemesService {
     });
   }
 
-  async shareTheme(themeId) {
+  async shareTheme(themeId, userId) {
     const id = new ObjectId(themeId);
+    const user_id = new ObjectId(userId);
     await this.userThemeEntityMongoRepository.updateMany(
-      { themeId: new ObjectId(themeId) },
-      { $set: { isPublic: true } },
+      { themeId: id },
+      {
+        $set: {
+          isPublic: true,
+          themeId: id,
+          userId: user_id,
+          createdAt: new Date(),
+        },
+      },
+      { upsert: true },
     );
     return this.themeEntityMongoRepository.update(id, {
       isPublic: true,

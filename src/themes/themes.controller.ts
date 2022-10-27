@@ -40,8 +40,8 @@ export class ThemesController {
   }
   @UseGuards(JwtAuthGuard)
   @Put('shareTheme/:id')
-  makeThemePublic(@Param('id') id: string) {
-    return this.themesService.shareTheme(id);
+  makeThemePublic(@Request() req, @Param('id') id: string) {
+    return this.themesService.shareTheme(id, req.user.id);
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

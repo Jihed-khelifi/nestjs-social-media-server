@@ -10,7 +10,7 @@ import { ObjectId } from 'mongodb';
 const ONESIGNAL_APP_ID = '92a64123-4fb9-4c5b-90eb-b789794f168d';
 const app_key_provider = {
   getToken() {
-    return 'Y2QwNzVjOWUtNWNjMC00OGFmLWJkYTQtZjlhOTkxM2E2MDM4';
+    return 'OTkzN2ZiOGMtODEyZC00OTE5LWJiYTgtY2E2Mzc0NjQ0YWZm';
   },
 };
 

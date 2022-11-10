@@ -208,6 +208,7 @@ export class NotificationsService {
       _id: postId,
     });
     const post = posts[0];
+    post.comments = [];
     const user = await this.usersService.findOne(new ObjectId(userId));
     if (
       post.createdBy.toString() !== userId.toString() &&

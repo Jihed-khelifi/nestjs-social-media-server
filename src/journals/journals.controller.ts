@@ -124,4 +124,9 @@ export class JournalsController {
   ) {
     return this.journalsService.getInsightsData(req.user, startDate, endDate);
   }
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deletePost(@Param('id') id: string, @Request() req) {
+    return this.journalsService.delete(id, req.user);
+  }
 }

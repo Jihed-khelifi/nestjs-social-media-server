@@ -62,7 +62,7 @@ export class JournalsService {
   }
 
   async delete(id, user: User) {
-    const journal = await this.journalMongoRepository.findOne(id);
+    const journal = await this.journalMongoRepository.findOne(new ObjectId(id));
     if (journal) {
       await this.journalMongoRepository.delete({ id: new ObjectId(id) });
     } else {

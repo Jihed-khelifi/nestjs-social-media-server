@@ -38,6 +38,11 @@ export class ThemesController {
   update(@Request() req, @Body() themeDto: UpdateThemeDto) {
     return this.themesService.update(themeDto, req.user.id);
   }
+  // @UseGuards(JwtAuthGuard)
+  // @Put('admin')
+  // updateAdmin(@Request() req) {
+  //   return this.themesService.updateDefault();
+  // }
   @UseGuards(JwtAuthGuard)
   @Put('shareTheme/:id')
   makeThemePublic(@Request() req, @Param('id') id: string) {

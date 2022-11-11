@@ -204,4 +204,38 @@ export class ThemesService {
       userId: new ObjectId(userId),
     });
   }
+  async updateDefault() {
+    const defaultThemes = await this.themeEntityMongoRepository.findBy({
+      name: 'Continuem Default',
+    });
+    for (let theme of defaultThemes) {
+      const id = new ObjectId(theme._id);
+      theme = {
+        ...theme,
+        ...{
+          accentColor: '#DDDDDD',
+          bgColor: '#FFFFFF',
+          borderColor: '#f2efea',
+          cardBackground: '#F9F9F9',
+          name: 'Continuem Default',
+          negativeColor: '#DD0000',
+          negativeTextColor: '#FFFFFF',
+          neutralColor: '#FFB329',
+          neutralTextColor: '#FFFFFF',
+          positiveColor: '#00B012',
+          positiveTextColor: '#FFFFFF',
+          primaryColor: '#804BC7',
+          primaryTextColor: '#404040',
+          routineTextColor: '#4D4D4D',
+          secondaryBackgroundColor: '#FFFFFF',
+          default: true,
+        },
+      };
+      await this.themeEntityMongoRepository.update(id, {
+        ...theme,
+        _id: id,
+        userId: new ObjectId(theme.userId),
+      });
+    }
+  }
 }

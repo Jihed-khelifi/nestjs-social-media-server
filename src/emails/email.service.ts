@@ -14,7 +14,7 @@ export class EmailService {
         otp,
       });
       const msg = {
-        to: user.email,
+        to: user.email.trim(),
         from: 'dev@continuem.co',
         subject: subject,
         html: finalHtml,

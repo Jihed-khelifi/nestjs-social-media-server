@@ -32,6 +32,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
+    createUserDto.email = createUserDto.email.trim();
     const userByUsername = await this.findByUsername(createUserDto.username);
     const userByEmail = await this.findByEmail(createUserDto.email);
     if (userByEmail || userByUsername) {

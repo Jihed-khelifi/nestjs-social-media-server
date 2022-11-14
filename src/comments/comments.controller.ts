@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -23,5 +25,23 @@ export class CommentsController {
   @Get(':postId')
   getPostComments(@Request() req, @Param('postId') postId: string) {
     return this.commentsService.getPostComments(postId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put(':commentId')
+  editComment(
+    @Request() req,
+    @Param('commentId') commentId: string,
+    @Body() body: { message },
+  ) {
+    return this.commentsService.editComment(
+      commentId,
+      req.user.id,
+      body.message,
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Delete(':commentId')
+  deleteComment(@Request() req, @Param('commentId') commentId: string) {
+    return this.commentsService.deleteComment(commentId);
   }
 }

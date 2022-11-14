@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { CommentEntity } from './entities/comment.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ObjectId } from 'mongodb';
 import { NotificationsService } from '../notifications/notifications.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class CommentsService {
@@ -35,5 +36,14 @@ export class CommentsService {
   }
   async getPostComments(postId) {
     return this.commentMongoRepository.findBy({ postId: new ObjectId(postId) });
+  }
+  async editComment(commentId, userId, commentMessage) {
+    return this.commentMongoRepository.update(
+      { id: new ObjectId(commentId) },
+      { comment: commentMessage },
+    );
+  }
+  async deleteComment(commentId) {
+    return this.commentMongoRepository.delete({ id: new ObjectId(commentId) });
   }
 }

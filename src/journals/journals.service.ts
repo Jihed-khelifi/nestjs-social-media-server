@@ -96,6 +96,7 @@ export class JournalsService {
             'user.isActive': 0,
           },
         },
+        { $addFields: { currentDate: '$$NOW' } },
         {
           $lookup: {
             from: 'comments',
@@ -240,6 +241,7 @@ export class JournalsService {
             'user.isActive': 0,
           },
         },
+        { $addFields: { currentDate: '$$NOW' } },
         {
           $lookup: {
             from: 'comments',
@@ -350,6 +352,7 @@ export class JournalsService {
                 user: '$user',
                 comments: '$comments',
                 createdAt: '$createdAt',
+                currentDate: '$currentDate',
               },
             },
           },

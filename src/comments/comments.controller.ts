@@ -19,6 +19,13 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Request() req, @Body() createCommentDto: CreateCommentDto) {
+    if (createCommentDto._id) {
+      return this.commentsService.editComment(
+        createCommentDto._id,
+        req.user.id,
+        createCommentDto.comment,
+      );
+    }
     return this.commentsService.createComment(createCommentDto, req.user.id);
   }
   @UseGuards(JwtAuthGuard)

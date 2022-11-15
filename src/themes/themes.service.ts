@@ -140,7 +140,6 @@ export class ThemesService {
         },
       },
       { $sort: { count: -1 } },
-      { $limit: 5 },
     ];
   }
 

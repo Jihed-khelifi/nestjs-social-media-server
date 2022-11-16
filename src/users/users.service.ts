@@ -127,6 +127,7 @@ export class UsersService {
             near: user.location,
             spherical: true,
             distanceMultiplier: 0.001,
+            maxDistance: 200000,
             distanceField: 'distance',
           },
         },

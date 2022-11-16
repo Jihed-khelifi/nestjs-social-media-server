@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -22,6 +23,15 @@ export class ThemesController {
   @Get()
   findAll(@Request() req) {
     return this.themesService.getMyThemes(req.user.id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('resources/:type')
+  getResourcesThemes(
+    @Query('page') page = 0,
+    @Param('type') type: string,
+    @Request() req,
+  ) {
+    return this.themesService.getResourcesThemes(req.user.id, page, type);
   }
   @UseGuards(JwtAuthGuard)
   @Get('public')

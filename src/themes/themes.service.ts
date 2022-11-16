@@ -33,7 +33,79 @@ export class ThemesService {
   async deleteTheme(themeId) {
     return this.themeEntityMongoRepository.deleteOne({ _id: themeId });
   }
-
+  async getResourcesThemes(userId, page, type) {
+    if (type === 'popular') {
+      return this.userThemeEntityMongoRepository
+        .aggregate(this.getAggregatePipelines({}, page))
+        .toArray();
+    } else if (type === 'trending') {
+      return this.userThemeEntityMongoRepository
+        .aggregate(
+          this.getAggregatePipelines(
+            {
+              createdAt: {
+                $gte: new Date(
+                  moment().subtract(3, 'days').format('YYYY/MM/DD'),
+                ),
+                $lt: new Date(
+                  new Date(moment().format('YYYY/MM/DD')).getTime() +
+                    60 * 60 * 24 * 1000,
+                ),
+              },
+            },
+            page,
+          ),
+        )
+        .toArray();
+    } else {
+      return this.themeEntityMongoRepository
+        .aggregate([
+          {
+            $match: {
+              isPublic: true,
+              createdAt: {
+                $gte: new Date(moment().format('YYYY/MM/DD')),
+                $lt: new Date(
+                  new Date(moment().format('YYYY/MM/DD')).getTime() +
+                    60 * 60 * 24 * 1000,
+                ),
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          { $unwind: '$user' },
+          {
+            $project: {
+              'user.password': 0,
+              'user.activationKey': 0,
+              'user.isActive': 0,
+              'user.otpSentAt': 0,
+              'user.otp': 0,
+            },
+          },
+          {
+            $facet: {
+              pageDetails: [
+                { $count: 'total' },
+                { $addFields: { page: page } },
+              ],
+              themes: [{ $skip: page * 10 }, { $limit: 10 }],
+            },
+          },
+          {
+            $unwind: '$pageDetails',
+          },
+        ])
+        .toArray();
+    }
+  }
   async getPublicThemes(userId) {
     const continuemDefault = await this.themeEntityMongoRepository.findOneBy({
       userId: new ObjectId(userId),
@@ -97,8 +169,8 @@ export class ThemesService {
     };
   }
 
-  getAggregatePipelines(matchCondition) {
-    return [
+  getAggregatePipelines(matchCondition, page?) {
+    const pipelines: any[] = [
       {
         $match: {
           isPublic: true,
@@ -141,6 +213,18 @@ export class ThemesService {
       },
       { $sort: { count: -1 } },
     ];
+    if (page) {
+      pipelines.push({
+        $facet: {
+          pageDetails: [{ $count: 'total' }, { $addFields: { page: page } }],
+          themes: [{ $skip: page * 10 }, { $limit: 10 }],
+        },
+      });
+      pipelines.push({
+        $unwind: '$pageDetails',
+      });
+    }
+    return pipelines;
   }
 
   async applyTheme(themeId, userId) {

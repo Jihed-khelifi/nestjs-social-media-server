@@ -214,7 +214,7 @@ export class ThemesService {
       },
       { $sort: { count: -1 } },
     ];
-    if (page) {
+    if (page !== null && page !== undefined) {
       pipelines.push({
         $facet: {
           pageDetails: [{ $count: 'total' }, { $addFields: { page: page } }],

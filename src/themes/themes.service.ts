@@ -112,8 +112,9 @@ export class ThemesService {
       default: true,
     });
     const popularThemes = await this.userThemeEntityMongoRepository
-      .aggregate(this.getAggregatePipelines({}))
+      .aggregate(this.getAggregatePipelines({}, 0))
       .toArray();
+    const popularPageThemes = popularThemes[0].themes;
     const trendingThemes = await this.userThemeEntityMongoRepository
       .aggregate(
         this.getAggregatePipelines({
@@ -163,7 +164,7 @@ export class ThemesService {
       .toArray();
     return {
       continuemDefault,
-      popularThemes: popularThemes,
+      popularThemes: popularPageThemes,
       trendingThemes: trendingThemes,
       newThemes,
     };

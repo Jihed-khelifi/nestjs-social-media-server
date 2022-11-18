@@ -25,13 +25,9 @@ export class ThemesController {
     return this.themesService.getMyThemes(req.user.id);
   }
   @UseGuards(JwtAuthGuard)
-  @Get('resources/:type')
-  getResourcesThemes(
-    @Query('page') page = 0,
-    @Param('type') type: string,
-    @Request() req,
-  ) {
-    return this.themesService.getResourcesThemes(req.user.id, page, type);
+  @Get('resources')
+  getResourcesThemes(@Query('page') page = 0, @Request() req) {
+    return this.themesService.getResourcesThemes(req.user.id, page);
   }
   @UseGuards(JwtAuthGuard)
   @Get('public')

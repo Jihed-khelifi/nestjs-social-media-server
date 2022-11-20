@@ -55,12 +55,21 @@ export class NotificationsService {
         {
           $lookup: {
             from: 'users',
+            localField: 'relatedUserId',
+            foreignField: '_id',
+            as: 'relatedUser',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
             localField: 'userId',
             foreignField: '_id',
             as: 'user',
           },
         },
         { $unwind: '$user' },
+        { $unwind: '$relatedUser' },
         {
           $lookup: {
             from: 'journals',

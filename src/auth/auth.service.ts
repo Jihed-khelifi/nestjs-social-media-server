@@ -47,6 +47,7 @@ export class AuthService {
       userId: user.id,
       deleteRequested: user.deleteRequested,
       deleteRequestedOn: data.deleteRequestedOn,
+      isAdmin: user.isAdmin,
       message: 'User logged in successfully.',
     };
   }

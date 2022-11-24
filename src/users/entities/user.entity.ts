@@ -56,4 +56,7 @@ export class User {
 
   @Column({ default: false })
   deleteRequested: boolean;
+
+  @Column({ default: false })
+  isAdmin: boolean;
 }

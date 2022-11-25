@@ -364,9 +364,11 @@ export class JournalsService {
   }
 
   async getCommunityPosts(user: any, type: string, page: number) {
-    await this.userService.updateUser(new ObjectId(user.id), {
-      isOnline: true,
-    });
+    if (user.id) {
+      await this.userService.updateUser(new ObjectId(user.id), {
+        isOnline: true,
+      });
+    }
     const matchQuery = {
       $match: {},
     };

@@ -18,6 +18,7 @@ import { ObjectId } from 'mongodb';
 import { UpdateJournalDto } from './dto/update-journal.dto';
 import { RealIP } from 'nestjs-real-ip';
 import { UsersService } from '../users/users.service';
+import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 const axios = require('axios').default;
 
 @Controller('journals')
@@ -56,7 +57,7 @@ export class JournalsController {
     const user = req.user;
     return this.journalsService.minePosts(user);
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('community/:type')
   async getCommunityPosts(
     @Param('type') type: string,
@@ -65,7 +66,7 @@ export class JournalsController {
     @RealIP() ip: string,
   ) {
     let user = req.user;
-    if (type === 'country' && !req.user.country) {
+    if (type === 'country' && user && !req.user.country) {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
       await axios.get(api).then(async (res) => {
         if (res.status === 200 || res.status === 201) {
@@ -83,6 +84,22 @@ export class JournalsController {
           });
         }
       });
+    }
+    if (!user) {
+      const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
+      const res = await axios.get(api);
+      if (res.status === 200 || res.status === 201) {
+        const { city, country, region, latitude, longitude } = res.data;
+        user = {
+          city,
+          country,
+          state: region,
+          location: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+        };
+      }
     }
     return this.journalsService.getCommunityPosts(user, type, page);
   }

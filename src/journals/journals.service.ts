@@ -664,7 +664,7 @@ export class JournalsService {
         continue;
       }
       const filtered = finalData.causesOfNegativity.findIndex(
-        (e) => e.type === catData.emotion,
+        (e) => e.title === catData.category,
       );
       if (filtered !== -1) {
         finalData.causesOfNegativity[filtered] = {
@@ -688,7 +688,7 @@ export class JournalsService {
         continue;
       }
       const filtered = finalData.causesOfPositivity.findIndex(
-        (e) => e.type === catData.emotion,
+        (e) => e.title === catData.category,
       );
       if (filtered !== -1) {
         finalData.causesOfPositivity[filtered] = {

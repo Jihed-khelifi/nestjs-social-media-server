@@ -630,13 +630,19 @@ export class JournalsService {
     finalData.causesOfPositivity = [];
     for (const key of Object.keys(topEmotionGroup)) {
       for (const emotionData of topEmotionGroup[key]) {
-        const percent = Math.round(
+        let percent = Math.round(
           (emotionData.time_difference / totalSum) * 100,
         );
         if (percent < 1) {
           continue;
         }
         for (const emotion of emotionData.emotions.map((e) => e.title)) {
+          const filtered = finalData.topEmotions.find(
+            (e) => e.title === emotion,
+          );
+          if (filtered) {
+            percent = percent + filtered.percent;
+          }
           finalData.topEmotions.push({
             title: emotion,
             percent,

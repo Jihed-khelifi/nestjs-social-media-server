@@ -633,6 +633,9 @@ export class JournalsService {
         const percent = Math.round(
           (emotionData.time_difference / totalSum) * 100,
         );
+        if (percent < 1) {
+          continue;
+        }
         for (const emotion of emotionData.emotions.map((e) => e.title)) {
           finalData.topEmotions.push({
             title: emotion,

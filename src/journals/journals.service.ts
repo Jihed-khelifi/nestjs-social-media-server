@@ -650,6 +650,9 @@ export class JournalsService {
       const percent = Math.round(
         (catData.time_difference / totalSumNegative) * 100,
       );
+      if (percent < 1) {
+        continue;
+      }
       finalData.causesOfNegativity.push({
         title: catData.category,
         type: catData.emotion,
@@ -661,6 +664,9 @@ export class JournalsService {
       const percent = Math.round(
         (catData.time_difference / totalSumPositive) * 100,
       );
+      if (percent < 1) {
+        continue;
+      }
       finalData.causesOfPositivity.push({
         title: catData.category,
         type: catData.emotion,
@@ -669,16 +675,13 @@ export class JournalsService {
       });
     }
     finalData.topEmotions = finalData.topEmotions.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) => b.percent - a.percent,
     );
     finalData.causesOfNegativity = finalData.causesOfNegativity.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) => b.percent - a.percent,
     );
     finalData.causesOfPositivity = finalData.causesOfPositivity.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) => b.percent - a.percent,
     );
     return finalData;
   }

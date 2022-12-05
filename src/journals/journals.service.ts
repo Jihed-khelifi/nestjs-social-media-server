@@ -630,7 +630,7 @@ export class JournalsService {
     finalData.causesOfPositivity = [];
     for (const key of Object.keys(topEmotionGroup)) {
       for (const emotionData of topEmotionGroup[key]) {
-        let percent = Math.round(
+        const percent = Math.round(
           (emotionData.time_difference / totalSum) * 100,
         );
         if (percent < 1) {
@@ -663,6 +663,16 @@ export class JournalsService {
       if (percent < 1) {
         continue;
       }
+      const filtered = finalData.causesOfNegativity.findIndex(
+        (e) => e.type === catData.emotion,
+      );
+      if (filtered !== -1) {
+        finalData.causesOfNegativity[filtered] = {
+          ...finalData.causesOfNegativity[filtered],
+          percent: finalData.causesOfNegativity[filtered].percent + percent,
+        };
+        continue;
+      }
       finalData.causesOfNegativity.push({
         title: catData.category,
         type: catData.emotion,
@@ -675,6 +685,16 @@ export class JournalsService {
         (catData.time_difference / totalSumPositive) * 100,
       );
       if (percent < 1) {
+        continue;
+      }
+      const filtered = finalData.causesOfPositivity.findIndex(
+        (e) => e.type === catData.emotion,
+      );
+      if (filtered !== -1) {
+        finalData.causesOfPositivity[filtered] = {
+          ...finalData.causesOfPositivity[filtered],
+          percent: finalData.causesOfPositivity[filtered].percent + percent,
+        };
         continue;
       }
       finalData.causesOfPositivity.push({

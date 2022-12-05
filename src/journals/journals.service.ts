@@ -637,11 +637,15 @@ export class JournalsService {
           continue;
         }
         for (const emotion of emotionData.emotions.map((e) => e.title)) {
-          const filtered = finalData.topEmotions.find(
+          const filtered = finalData.topEmotions.findIndex(
             (e) => e.title === emotion,
           );
-          if (filtered) {
-            percent = percent + filtered.percent;
+          if (filtered !== -1) {
+            finalData.topEmotions[filtered] = {
+              ...finalData.topEmotions[filtered],
+              percent: finalData.topEmotions[filtered].percent + percent,
+            };
+            continue;
           }
           finalData.topEmotions.push({
             title: emotion,

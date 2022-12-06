@@ -560,6 +560,9 @@ export class JournalsService {
       for (const key of Object.keys(groupByEmotion)) {
         groupByEmotion[key] = groupByEmotion[key].reduce(
           (accumulator, object) => {
+            if (object.time_difference > 120) {
+              object.time_difference = 120;
+            }
             return accumulator + object.time_difference;
           },
           0,
@@ -602,6 +605,9 @@ export class JournalsService {
     for (const key of Object.keys(groupByEmotion)) {
       groupByEmotion[key] = groupByEmotion[key].reduce(
         (accumulator, object) => {
+          if (object.time_difference > 120) {
+            object.time_difference = 120;
+          }
           return accumulator + object.time_difference;
         },
         0,
@@ -611,9 +617,15 @@ export class JournalsService {
       return prev + groupByEmotion[key];
     }, 0);
     const totalSumNegative = negativeData.reduce((accumulator, object) => {
+      if (object.time_difference > 120) {
+        object.time_difference = 120;
+      }
       return accumulator + object.time_difference;
     }, 0);
     const totalSumPositive = positiveData.reduce((accumulator, object) => {
+      if (object.time_difference > 120) {
+        object.time_difference = 120;
+      }
       return accumulator + object.time_difference;
     }, 0);
     finalData.moodDistribution = Object.keys(groupByEmotion).reduce(
@@ -630,6 +642,9 @@ export class JournalsService {
     finalData.causesOfPositivity = [];
     for (const key of Object.keys(topEmotionGroup)) {
       for (const emotionData of topEmotionGroup[key]) {
+        if (emotionData.time_difference > 120) {
+          emotionData.time_difference = 120;
+        }
         const percent = Math.round(
           (emotionData.time_difference / totalSum) * 100,
         );
@@ -946,6 +961,9 @@ export class JournalsService {
       for (const key of Object.keys(groupByEmotion)) {
         groupByEmotion[key] = groupByEmotion[key].reduce(
           (accumulator, object) => {
+            if (object.time_difference > 120) {
+              object.time_difference = 120;
+            }
             return accumulator + object.time_difference;
           },
           0,

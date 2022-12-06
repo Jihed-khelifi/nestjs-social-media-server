@@ -10,6 +10,7 @@ import {
 import { UsersService } from '../users/users.service';
 import { EmailService } from './email.service';
 import { ObjectId } from 'mongodb';
+import * as bcrypt from 'bcrypt';
 
 @Controller()
 export class ActivationController {
@@ -76,7 +77,9 @@ export class ActivationController {
       throw new HttpException('Invalid User Id', HttpStatus.UNAUTHORIZED);
     } else {
       if (this.hashCode(user.otp).toString() === body.hash) {
-        await this.userService.updateUser(user.id, { password: body.password });
+        await this.userService.updateUser(user.id, {
+          password: await bcrypt.hash(body.password, 10),
+        });
       } else {
         throw new HttpException('Invalid Hash', HttpStatus.BAD_REQUEST);
       }

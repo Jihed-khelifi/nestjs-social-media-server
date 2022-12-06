@@ -16,6 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ObjectId } from 'mongodb';
 import { ThemesService } from '../themes/themes.service';
 import { UserUsernameDto } from './dto/user-username.dto';
+import * as bcrypt from "bcrypt";
 
 @Controller('users')
 export class UsersController {
@@ -66,6 +67,7 @@ export class UsersController {
   @Put('changePassword')
   async changePassword(@Request() req, @Body() updateUserDto: UpdateUserDto) {
     if (req.user.otpVerified) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
       return await this.userService.updateUser(req.user.id, updateUserDto);
     }
     throw new HttpException('Action not permitted.', HttpStatus.BAD_REQUEST);

@@ -67,7 +67,7 @@ export class UsersService {
     user.theme = theme._id;
     await this.updateUser(user.id, { ...user });
     await this.sendOtp(user);
-    return this.authService.login(user);
+    return this.authService.login(user, true);
   }
 
   async sendOtp(user) {

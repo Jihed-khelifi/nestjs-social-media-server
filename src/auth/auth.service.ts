@@ -27,9 +27,9 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User) {
+  async login(user: User, justSignedup?) {
     const payload = { email: user.email, sub: user.id };
-    if (!user.isActive) {
+    if (!user.isActive && !justSignedup) {
       await this.usersService.sendOtp(user);
     }
     let data = {

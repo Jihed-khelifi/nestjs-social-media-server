@@ -23,6 +23,9 @@ export class CommentEntity {
   @Column()
   comment: string;
 
+  @Column()
+  status: string;
+
   @Column({ name: 'mentionedUsers' })
   mentionedUsers: ObjectID[];
 

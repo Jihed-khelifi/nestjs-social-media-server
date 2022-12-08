@@ -37,6 +37,9 @@ export class CommentsService {
   async getPostComments(postId) {
     return this.commentMongoRepository.findBy({ postId: new ObjectId(postId) });
   }
+  async getCommentById(id) {
+    return this.commentMongoRepository.findOneById(id);
+  }
   async editComment(commentId, userId, commentMessage) {
     return this.commentMongoRepository.update(
       { id: new ObjectId(commentId) },

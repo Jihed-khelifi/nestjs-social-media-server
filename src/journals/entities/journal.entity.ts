@@ -25,6 +25,9 @@ export class Journal {
   @Column()
   type: string;
 
+  @Column()
+  status: string;
+
   @ObjectIdColumn({ name: 'createdBy' })
   createdBy: ObjectID;
 

@@ -18,7 +18,7 @@ import { ObjectId } from 'mongodb';
 import { UpdateJournalDto } from './dto/update-journal.dto';
 import { RealIP } from 'nestjs-real-ip';
 import { UsersService } from '../users/users.service';
-import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 const axios = require('axios').default;
 
 @Controller('journals')

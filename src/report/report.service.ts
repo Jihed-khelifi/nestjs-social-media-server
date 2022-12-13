@@ -34,6 +34,20 @@ export class ReportService {
           },
         },
         {
+          $group: {
+            _id: '$dataId',
+            data: { $first: '$$ROOT' },
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: { $mergeObjects: [{ count: '$count' }, '$data'] },
+          },
+        },
+        {
           $lookup: {
             from: 'journals',
             localField: 'dataId',
@@ -282,6 +296,7 @@ export class ReportService {
             reportedUser: 1,
             reportedBy: 1,
             reportedAt: 1,
+            count: 1,
             data: {
               $switch: {
                 branches: [

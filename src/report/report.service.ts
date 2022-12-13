@@ -35,6 +35,22 @@ export class ReportService {
         },
         {
           $lookup: {
+            from: 'journals',
+            localField: 'dataId',
+            foreignField: '_id',
+            as: 'journal',
+          },
+        },
+        {
+          $lookup: {
+            from: 'comments',
+            localField: 'dataId',
+            foreignField: '_id',
+            as: 'comment',
+          },
+        },
+        {
+          $lookup: {
             from: 'users',
             localField: 'reportedUser',
             foreignField: '_id',
@@ -51,6 +67,30 @@ export class ReportService {
             'reportedUser.isActive': 0,
           },
         },
+        {
+          $project: {
+            type: 1,
+            status: 1,
+            reason: 1,
+            reportedUser: 1,
+            reportedBy: 1,
+            reportedAt: 1,
+            data: {
+              $switch: {
+                branches: [
+                  {
+                    case: {
+                      $eq: ['$journal', []],
+                    },
+                    then: '$comment',
+                  },
+                ],
+                default: '$journal',
+              },
+            },
+          },
+        },
+        { $unwind: '$data' },
       ])
       .toArray();
   }

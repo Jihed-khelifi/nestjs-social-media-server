@@ -279,6 +279,24 @@ export class ReportService {
                         as: 'comments',
                       },
                     },
+                    {
+                      $lookup: {
+                        from: 'users',
+                        localField: 'createdBy',
+                        foreignField: '_id',
+                        as: 'user',
+                      },
+                    },
+                    { $unwind: '$user' },
+                    {
+                      $project: {
+                        'user.password': 0,
+                        'user.activationKey': 0,
+                        'user.otp': 0,
+                        'user.otpSentAt': 0,
+                        'user.isActive': 0,
+                      },
+                    },
                   ],
                   as: 'post',
                 },

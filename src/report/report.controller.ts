@@ -31,7 +31,7 @@ export class ReportController {
   async create(@Request() req, @Body() reportDto: ReportDto) {
     const report = await this.reportService.find(reportDto.dataId, req.user.id);
     if (report) {
-      throw new HttpException('Report Already Created', HttpStatus.CONFLICT);
+      throw new HttpException('Report Already Created', HttpStatus.BAD_REQUEST);
     }
     let userReported: ObjectId = null;
     if (reportDto.type === 'journal') {
@@ -48,6 +48,7 @@ export class ReportController {
       }
     }
     reportDto.reportedBy = new ObjectId(req.user.id);
+    reportDto.dataId = new ObjectId(reportDto.dataId);
     reportDto.status = 'REPORTED';
     reportDto.reportedUser = userReported;
     return this.reportService.create(reportDto);

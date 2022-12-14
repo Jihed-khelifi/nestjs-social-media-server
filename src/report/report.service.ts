@@ -25,6 +25,14 @@ export class ReportService {
       },
     });
   }
+  markStatus(dataId: string, status: string) {
+    return this.reportEntityMongoRepository.update(
+      {
+        dataId: new ObjectId(dataId),
+      },
+      { status },
+    );
+  }
   getAllReportedData() {
     return this.reportEntityMongoRepository
       .aggregate([

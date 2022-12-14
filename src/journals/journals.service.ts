@@ -1,12 +1,14 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MongoRepository } from 'typeorm';
+import { MongoRepository, Not } from 'typeorm';
 import { Journal } from './entities/journal.entity';
 import { User } from '../users/entities/user.entity';
 import { ObjectId } from 'mongodb';
 import { UpdateJournalDto } from './dto/update-journal.dto';
 import { UsersService } from '../users/users.service';
+import { ReportService } from '../report/report.service';
+
 const monthNames = [
   'January',
   'February',
@@ -21,12 +23,14 @@ const monthNames = [
   'November',
   'December',
 ];
+
 @Injectable()
 export class JournalsService {
   constructor(
     @InjectRepository(Journal)
     private journalMongoRepository: MongoRepository<Journal>,
     private userService: UsersService,
+    private reportService: ReportService,
   ) {}
 
   create(createJournalDto: CreateJournalDto) {
@@ -57,6 +61,7 @@ export class JournalsService {
       type: 'public',
     });
   }
+
   getPostById(id) {
     return this.journalMongoRepository.findOneById(id);
   }
@@ -64,7 +69,25 @@ export class JournalsService {
   async delete(id, user: User) {
     const journal = await this.journalMongoRepository.findOne(new ObjectId(id));
     if (journal) {
-      await this.journalMongoRepository.delete({ id: new ObjectId(id) });
+      await this.journalMongoRepository.update(
+        { id: new ObjectId(id) },
+        { status: 'deleted' },
+      );
+      await this.reportService.markStatus(id, 'deleted');
+    } else {
+      throw new HttpException('Not found', 404);
+    }
+    return journal;
+  }
+
+  async removePostByAdmin(id) {
+    const journal = await this.journalMongoRepository.findOne(new ObjectId(id));
+    if (journal) {
+      await this.journalMongoRepository.update(
+        { id: new ObjectId(id) },
+        { status: 'removed' },
+      );
+      await this.reportService.markStatus(id, 'removed');
     } else {
       throw new HttpException('Not found', 404);
     }
@@ -203,6 +226,7 @@ export class JournalsService {
     };
     matchQuery.$match = {
       createdBy: new ObjectId(user.id),
+      status: { $nin: ['deleted', 'removed'] },
     };
     return this.journalMongoRepository
       .aggregate([
@@ -583,6 +607,7 @@ export class JournalsService {
     }
     return finalData;
   }
+
   async getInsightsData(user: any, startDate: string, endDate: string) {
     const endD = new Date(endDate);
     const finalData: any = {};
@@ -730,6 +755,7 @@ export class JournalsService {
     );
     return finalData;
   }
+
   async insightAggregation(user, matchCondition) {
     return await this.journalMongoRepository
       .aggregate([
@@ -835,6 +861,7 @@ export class JournalsService {
       ])
       .toArray();
   }
+
   async moodDistributionAggregationGroupByMonth(user) {
     const aggregateData = await this.journalMongoRepository
       .aggregate([

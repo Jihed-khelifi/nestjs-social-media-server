@@ -7,6 +7,8 @@ import {
   HttpException,
   HttpStatus,
   Get,
+  Put,
+  Param,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { ReportDto } from './dto/report.dto';
@@ -52,6 +54,11 @@ export class ReportController {
     reportDto.status = 'REPORTED';
     reportDto.reportedUser = userReported;
     return this.reportService.create(reportDto);
+  }
+  @UseGuards(AdminJwtAuthGuard)
+  @Put(':dataId')
+  async approve(@Request() req, @Param('dataId') dataId: string) {
+    await this.reportService.markStatus(dataId, 'approved');
   }
   @UseGuards(AdminJwtAuthGuard)
   @Get()

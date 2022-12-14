@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { ReportController } from './report.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,8 +11,8 @@ import { CommentsModule } from '../comments/comments.module';
   imports: [
     TypeOrmModule.forFeature([ReportEntity]),
     UsersModule,
-    CommentsModule,
-    JournalsModule,
+    forwardRef(() => CommentsModule),
+    forwardRef(() => JournalsModule),
   ],
   controllers: [ReportController],
   providers: [ReportService],

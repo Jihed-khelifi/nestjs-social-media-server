@@ -19,6 +19,7 @@ import { UpdateJournalDto } from './dto/update-journal.dto';
 import { RealIP } from 'nestjs-real-ip';
 import { UsersService } from '../users/users.service';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { AdminJwtAuthGuard } from '../auth/admin-jwt-auth.guard';
 const axios = require('axios').default;
 
 @Controller('journals')
@@ -145,5 +146,10 @@ export class JournalsController {
   @Delete(':id')
   async deletePost(@Param('id') id: string, @Request() req) {
     return this.journalsService.delete(id, req.user);
+  }
+  @UseGuards(AdminJwtAuthGuard)
+  @Delete('removePostAdmin/:id')
+  async removePostByAdmin(@Param('id') id: string) {
+    return this.journalsService.removePostByAdmin(id);
   }
 }

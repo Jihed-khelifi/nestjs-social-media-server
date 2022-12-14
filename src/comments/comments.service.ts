@@ -6,6 +6,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { ObjectId } from 'mongodb';
 import { NotificationsService } from '../notifications/notifications.service';
 import * as moment from 'moment';
+import { ReportService } from "../report/report.service";
 
 @Injectable()
 export class CommentsService {
@@ -13,6 +14,7 @@ export class CommentsService {
     private notificationsService: NotificationsService,
     @InjectRepository(CommentEntity)
     private commentMongoRepository: MongoRepository<CommentEntity>,
+    private reportService: ReportService,
   ) {}
   async createComment(commentDto: CreateCommentDto, userId) {
     const data: any = {
@@ -47,6 +49,23 @@ export class CommentsService {
     );
   }
   async deleteComment(commentId) {
-    return this.commentMongoRepository.delete({ id: new ObjectId(commentId) });
+    await this.commentMongoRepository.update(
+      { id: new ObjectId(commentId) },
+      { status: 'deleted' },
+    );
+    await this.reportService.markStatus(commentId, 'deleted');
+  }
+  async removePostByAdmin(id) {
+    const comment = await this.commentMongoRepository.findOne(new ObjectId(id));
+    if (comment) {
+      await this.commentMongoRepository.update(
+        { id: new ObjectId(id) },
+        { status: 'removed' },
+      );
+      await this.reportService.markStatus(id, 'removed');
+    } else {
+      throw new HttpException('Not found', 404);
+    }
+    return comment;
   }
 }

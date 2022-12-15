@@ -26,12 +26,11 @@ export class ReportService {
     });
   }
   markStatus(dataId: string, status: string) {
-    console.log(dataId, status);
     return this.reportEntityMongoRepository.update(
       {
         dataId: new ObjectId(dataId),
       },
-      { status },
+      { status: status },
     );
   }
   getAllReportedData() {

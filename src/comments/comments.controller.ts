@@ -55,6 +55,6 @@ export class CommentsController {
   @UseGuards(AdminJwtAuthGuard)
   @Delete('removeCommentAdmin/:commentId')
   async removePostByAdmin(@Param('commentId') commentId: string) {
-    return this.commentsService.removePostByAdmin(commentId);
+    return this.commentsService.removeCommentByAdmin(commentId);
   }
 }

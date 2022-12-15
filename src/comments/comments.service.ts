@@ -55,7 +55,7 @@ export class CommentsService {
     );
     await this.reportService.markStatus(commentId, 'deleted');
   }
-  async removePostByAdmin(id) {
+  async removeCommentByAdmin(id) {
     const comment = await this.commentMongoRepository.findOne(new ObjectId(id));
     if (comment) {
       await this.commentMongoRepository.update(

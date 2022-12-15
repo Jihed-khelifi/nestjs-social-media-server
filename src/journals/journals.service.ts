@@ -406,6 +406,7 @@ export class JournalsService {
         createdBy: {
           $in: countryUsers.map((p) => new ObjectId(p.id)),
         },
+        status: { $nin: ['deleted', 'removed'] },
       };
     } else if (type === 'local') {
       const nearByActiveUsers = await this.userService.getNearbyActiveUsers(
@@ -416,10 +417,12 @@ export class JournalsService {
         createdBy: {
           $in: nearByActiveUsers.map((p) => new ObjectId(p.id)),
         },
+        status: { $nin: ['deleted', 'removed'] },
       };
     } else {
       matchQuery.$match = {
         type: 'public',
+        status: { $nin: ['deleted', 'removed'] },
       };
     }
     return this.journalMongoRepository

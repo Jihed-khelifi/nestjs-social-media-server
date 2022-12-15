@@ -12,7 +12,7 @@ import {
 import { CommentsService } from './comments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { AdminJwtAuthGuard } from "../auth/admin-jwt-auth.guard";
+import { AdminJwtAuthGuard } from '../auth/admin-jwt-auth.guard';
 
 @Controller('comments')
 export class CommentsController {
@@ -53,7 +53,7 @@ export class CommentsController {
     return this.commentsService.deleteComment(commentId);
   }
   @UseGuards(AdminJwtAuthGuard)
-  @Delete('removePostAdmin/:commentId')
+  @Delete('removeCommentAdmin/:commentId')
   async removePostByAdmin(@Param('commentId') commentId: string) {
     return this.commentsService.removePostByAdmin(commentId);
   }

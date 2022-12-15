@@ -8,10 +8,10 @@ import {
 
 @Entity('reported_data')
 export class ReportEntity {
-  @ObjectIdColumn()
+  @ObjectIdColumn({ name: 'id' })
   id: ObjectID;
 
-  @ObjectIdColumn()
+  @ObjectIdColumn({ name: 'dataId' })
   dataId: ObjectID;
 
   @Column()

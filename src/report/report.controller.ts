@@ -58,7 +58,7 @@ export class ReportController {
   @UseGuards(AdminJwtAuthGuard)
   @Put(':dataId')
   async approve(@Request() req, @Param('dataId') dataId: string) {
-    await this.reportService.markStatus(dataId, 'approved');
+    return this.reportService.markStatus(dataId, 'approved');
   }
   @UseGuards(AdminJwtAuthGuard)
   @Get()

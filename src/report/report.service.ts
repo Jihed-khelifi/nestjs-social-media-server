@@ -25,13 +25,18 @@ export class ReportService {
       },
     });
   }
-  markStatus(dataId: string, status: string) {
-    return this.reportEntityMongoRepository.update(
-      {
+  async markStatus(dataId: string, status: string) {
+    const report = await this.reportEntityMongoRepository.findOne({
+      where: {
         dataId: new ObjectId(dataId),
       },
-      { status: status },
+    });
+    report.status = status;
+    await this.reportEntityMongoRepository.update(
+      { id: report.id },
+      { ...report },
     );
+    return report;
   }
   getAllReportedData() {
     return this.reportEntityMongoRepository

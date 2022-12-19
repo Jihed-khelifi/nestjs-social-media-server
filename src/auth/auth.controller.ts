@@ -5,6 +5,7 @@ import {
   UseGuards,
   Get,
   Body,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -24,9 +25,23 @@ export class AuthController {
   async login(@Request() req) {
     return req.user;
   }
+  @UseGuards(LocalAuthGuard)
+  @Post('/professional-login')
+  async professionalLogin(@Request() req) {
+    if(!req.user.isProfessional) {
+      throw new UnauthorizedException();
+  } 
+    return req.user;
+  }
   @Post('/register')
   async register(@Body() createUserDto: CreateUserDto) {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
+    return this.usersService.create(createUserDto);
+  }
+  @Post('/professional-register')
+  async professionalRegister(@Body() createUserDto: CreateUserDto) {
+    createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
+    createUserDto.isProfessional = true;
     return this.usersService.create(createUserDto);
   }
   @UseGuards(JwtAuthGuard)

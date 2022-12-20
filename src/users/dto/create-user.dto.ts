@@ -8,6 +8,7 @@ export class CreateUserDto {
   city: string;
   location: LocationType;
   isProfessional?: boolean;
+  professionalCode: string
 }
 export interface LocationType {
   type: string;

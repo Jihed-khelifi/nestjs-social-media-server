@@ -41,9 +41,11 @@ export class AuthController {
   @Post('/professional-register')
   async professionalRegister(@Body() createUserDto: CreateUserDto) {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
+    createUserDto.professionalCode = Math.random().toString(36).substring(2,9).toUpperCase();
     createUserDto.isProfessional = true;
     return this.usersService.create(createUserDto);
   }
+  // 
   @UseGuards(JwtAuthGuard)
   @Get('/profile')
   async getProfile(@Request() req) {

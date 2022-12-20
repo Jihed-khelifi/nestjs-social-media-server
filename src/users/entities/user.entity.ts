@@ -62,4 +62,7 @@ export class User {
 
   @Column({ default: false })
   isProfessional: boolean;
+
+  @Column()
+  professionalCode: string;
 }

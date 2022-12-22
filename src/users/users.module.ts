@@ -7,10 +7,11 @@ import { EmailsModule } from '../emails/emails.module';
 import { AuthModule } from '../auth/auth.module';
 import { ThemesModule } from '../themes/themes.module';
 import { DeleteUserEntity } from './entities/delete_user.entity';
+import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, DeleteUserEntity]),
+    TypeOrmModule.forFeature([User, DeleteUserEntity, LinkedAccountUserEntity]),
     EmailsModule,
     AuthModule,
     ThemesModule,

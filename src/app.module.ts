@@ -23,6 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { NotificationEntity } from './notifications/entities/notification.entity';
 import { ReportEntity } from './report/entities/report.entity';
 import { ReportModule } from './report/report.module';
+import { LinkedAccountUserEntity } from './users/entities/linked_account_user.entity';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ReportModule } from './report/report.module';
         DeleteUserEntity,
         NotificationEntity,
         ReportEntity,
+        LinkedAccountUserEntity,
       ],
       ssl: false,
       useUnifiedTopology: true,

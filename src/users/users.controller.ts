@@ -5,6 +5,8 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
+  Post,
   Put,
   Request,
   UseGuards,
@@ -16,7 +18,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ObjectId } from 'mongodb';
 import { ThemesService } from '../themes/themes.service';
 import { UserUsernameDto } from './dto/user-username.dto';
-import * as bcrypt from "bcrypt";
+import * as bcrypt from 'bcrypt';
+import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -38,6 +41,11 @@ export class UsersController {
   @Get('recoverAccount')
   recoverAccount(@Request() req) {
     return this.userService.recoverAccount(req.user.id);
+  }
+  // @UseGuards(JwtAuthGuard)
+  @Get('getUserByProfessionalCode/:code')
+  getUserByProfessionalCode(@Request() req, @Param('code') code: string) {
+    return this.userService.getUserByProfessionalCode(code);
   }
   @UseGuards(JwtAuthGuard)
   @Put('username')
@@ -76,5 +84,14 @@ export class UsersController {
   @Delete()
   async deleteAccount(@Request() req) {
     return this.userService.deleteAccount(req.user.id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('requestShareDataToProfessional')
+  async requestShareDataToProfessional(
+    @Body() createLinkAccountUserDto: CreateLinkAccountUserDto,
+  ) {
+    return this.userService.requestShareDataToProfessional(
+      createLinkAccountUserDto,
+    );
   }
 }

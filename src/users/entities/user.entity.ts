@@ -6,34 +6,37 @@ export class User {
   @ObjectIdColumn()
   id: ObjectID;
 
-  @Column()
-  name: string;
+  @Column({nullable: false})
+  first_name: string;
 
-  @Column()
+  @Column({nullable: false})
+  last_name: string;
+
+  @Column({nullable: false})
   email: string;
 
-  @Column()
+  @Column({nullable: false})
   username: string;
 
-  @Column()
+  @Column({nullable: false})
   password: string;
 
-  @Column()
+  @Column({nullable: false})
   otp: string;
 
   @Column()
   otpVerified: boolean;
 
-  @Column()
+  @Column({nullable: true})
   country: string;
 
-  @Column()
+  @Column({nullable: true})
   state: string;
 
-  @Column()
+  @Column({nullable: true})
   city: string;
 
-  @Column()
+  @Column({nullable: true})
   location: LocationType;
 
   @ObjectIdColumn({ name: 'theme' })
@@ -65,4 +68,9 @@ export class User {
 
   @Column()
   professionalCode: string;
+
+  @Column()
+  title: string;
+
+
 }

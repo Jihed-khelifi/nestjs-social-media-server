@@ -2,16 +2,23 @@ import { IsString, IsEmail } from "class-validator";
 
 export class CreateUserDto {
   @IsString()
-  name: string;
+  first_name: string;
+
+  @IsString()
+  last_name: string;
 
   @IsEmail()
   email: string;
 
   @IsString()
+  password: string;
+  
+  @IsString()
   username: string;
 
   @IsString()
-  password: string;
+  title: string;
+
 
   @IsString()
   country: string;
@@ -25,7 +32,8 @@ export class CreateUserDto {
   location: LocationType;
 
   isProfessional?: boolean;
-  professionalCode: string
+
+  professionalCode: string;
 }
 export interface LocationType {
   type: string;

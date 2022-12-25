@@ -6,6 +6,7 @@ import {
   Get,
   Body,
   UnauthorizedException,
+  ValidationPipe
 } from '@nestjs/common';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -39,7 +40,7 @@ export class AuthController {
     return this.usersService.create(createUserDto);
   }
   @Post('/professional-register')
-  async professionalRegister(@Body() createUserDto: CreateUserDto) {
+  async professionalRegister(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
     createUserDto.professionalCode = Math.random().toString(36).substring(2,9).toUpperCase();
     createUserDto.isProfessional = true;

@@ -20,6 +20,12 @@ export class NotificationEntity {
   @ObjectIdColumn({ name: 'postId' })
   postId: ObjectID;
 
+  @ObjectIdColumn({ name: 'commentId' })
+  commentId: ObjectID;
+
+  @ObjectIdColumn({ name: 'dataId' })
+  dataId: ObjectID;
+
   @Column()
   type: string;
 

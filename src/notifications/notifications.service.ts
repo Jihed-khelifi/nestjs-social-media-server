@@ -210,6 +210,8 @@ export class NotificationsService {
   }
   public async createCommentOnPostNotification(
     postId,
+    commentId,
+    dataId,
     userId,
     mentions: string[],
   ) {
@@ -230,6 +232,7 @@ export class NotificationsService {
       notification.postId = postId;
       notification.createdAt = new Date();
       notification.read = false;
+      notification.dataId = postId;
       notification.type = 'MY_POST_COMMENT';
       await this.sendNotification(
         notification.notificationMessage,
@@ -247,6 +250,8 @@ export class NotificationsService {
         mentionNotification.postId = postId;
         mentionNotification.createdAt = new Date();
         mentionNotification.read = false;
+        mentionNotification.dataId = dataId;
+        mentionNotification.commentId = commentId;
         mentionNotification.type = 'MENTION_IN_COMMENT';
         await this.sendNotification(
           mentionNotification.notificationMessage,

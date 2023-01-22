@@ -42,13 +42,14 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
       isActive: user.isActive,
       dob: user.dob,
-      userName: user.name,
+      userName: user.first_name,
       email: user.email,
       userId: user.id,
       deleteRequested: user.deleteRequested,
       deleteRequestedOn: data.deleteRequestedOn,
       isAdmin: user.isAdmin,
       message: 'User logged in successfully.',
+      professionalCode: user.professionalCode
     };
   }
 }

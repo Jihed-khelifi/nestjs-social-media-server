@@ -31,6 +31,8 @@ export class CommentsService {
     const comment = await this.commentMongoRepository.save(data);
     await this.notificationsService.createCommentOnPostNotification(
       data.postId,
+      data.commentId,
+      comment.id,
       userId,
       data.mentions,
     );

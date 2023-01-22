@@ -14,6 +14,8 @@ import { ThemesService } from '../themes/themes.service';
 import { DeleteUserEntity } from './entities/delete_user.entity';
 import * as moment from 'moment';
 import { Cron } from '@nestjs/schedule';
+import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
+import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
 
 dotEnv.config();
 
@@ -22,6 +24,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: MongoRepository<User>,
+    @InjectRepository(LinkedAccountUserEntity)
+    private linkedAccountUserEntityMongoRepository: MongoRepository<LinkedAccountUserEntity>,
     @InjectRepository(DeleteUserEntity)
     private deleteUserEntityMongoRepository: MongoRepository<DeleteUserEntity>,
     private emailService: EmailService,
@@ -97,6 +101,12 @@ export class UsersService {
 
   async findOne(id: ObjectId): Promise<User> {
     return this.usersRepository.findOneById(id);
+  }
+
+  async getUserByProfessionalCode(code: string): Promise<User> {
+    return this.usersRepository.findOneBy({
+      professionalCode: code,
+    });
   }
 
   async findByUsername(username: string): Promise<User> {
@@ -223,5 +233,12 @@ export class UsersService {
     const user = await this.usersRepository.findOneById(id);
     await this.usersRepository.update({ id }, { isActive: true });
     return user;
+  }
+  async requestShareDataToProfessional(
+    createLinkAccountUserDto: CreateLinkAccountUserDto,
+  ) {
+    return this.linkedAccountUserEntityMongoRepository.save(
+      createLinkAccountUserDto,
+    );
   }
 }

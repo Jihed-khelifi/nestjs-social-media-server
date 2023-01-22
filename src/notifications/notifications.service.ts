@@ -62,6 +62,15 @@ export class NotificationsService {
         },
         {
           $lookup: {
+            from: 'comments',
+            localField: 'commentId',
+            foreignField: '_id',
+            as: 'commentedOn',
+          },
+        },
+        { $unwind: '$commentedOn'},
+        {
+          $lookup: {
             from: 'users',
             localField: 'userId',
             foreignField: '_id',

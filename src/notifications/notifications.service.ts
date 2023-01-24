@@ -68,7 +68,6 @@ export class NotificationsService {
             as: 'commentedOn',
           },
         },
-        { $unwind: '$commentedOn'},
         {
           $lookup: {
             from: 'users',

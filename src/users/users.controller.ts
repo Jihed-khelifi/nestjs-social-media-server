@@ -20,6 +20,7 @@ import { ThemesService } from '../themes/themes.service';
 import { UserUsernameDto } from './dto/user-username.dto';
 import * as bcrypt from 'bcrypt';
 import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
+import { AdminJwtAuthGuard } from '../auth/admin-jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -93,5 +94,10 @@ export class UsersController {
     return this.userService.requestShareDataToProfessional(
       createLinkAccountUserDto,
     );
+  }
+  @UseGuards(AdminJwtAuthGuard)
+  @Get('banUnbanUser/:userId')
+  async banUser(@Param('userId') userId: string) {
+    return this.userService.banUnbanUser(userId);
   }
 }

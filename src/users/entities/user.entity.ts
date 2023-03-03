@@ -6,37 +6,37 @@ export class User {
   @ObjectIdColumn()
   id: ObjectID;
 
-  @Column({nullable: false})
+  @Column({ nullable: false })
   first_name: string;
 
-  @Column({nullable: false})
+  @Column({ nullable: false })
   last_name: string;
 
-  @Column({nullable: false})
+  @Column({ nullable: false })
   email: string;
 
-  @Column({nullable: false})
+  @Column({ nullable: false })
   username: string;
 
-  @Column({nullable: false})
+  @Column({ nullable: false })
   password: string;
 
-  @Column({nullable: false})
+  @Column({ nullable: false })
   otp: string;
 
   @Column()
   otpVerified: boolean;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   country: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   state: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   city: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   location: LocationType;
 
   @ObjectIdColumn({ name: 'theme' })
@@ -58,6 +58,9 @@ export class User {
   isActive: boolean;
 
   @Column({ default: false })
+  isBanned: boolean;
+
+  @Column({ default: false })
   deleteRequested: boolean;
 
   @Column({ default: false })
@@ -71,6 +74,4 @@ export class User {
 
   @Column()
   title: string;
-
-
 }

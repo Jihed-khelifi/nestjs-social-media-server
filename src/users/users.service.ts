@@ -241,4 +241,14 @@ export class UsersService {
       createLinkAccountUserDto,
     );
   }
+  async banUnbanUser(userId: string) {
+    const user = await this.usersRepository.findOneById(userId);
+    if (user && (user.isBanned === undefined || user.isBanned === null)) {
+      user.isBanned = false;
+    }
+    return this.usersRepository.update(
+      { id: user.id },
+      { isBanned: !user.isBanned },
+    );
+  }
 }

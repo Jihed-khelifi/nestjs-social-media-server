@@ -49,7 +49,8 @@ export class AuthService {
       deleteRequestedOn: data.deleteRequestedOn,
       isAdmin: user.isAdmin,
       message: 'User logged in successfully.',
-      professionalCode: user.professionalCode
+      professionalCode: user.professionalCode,
+      isBanned: user.isBanned,
     };
   }
 }

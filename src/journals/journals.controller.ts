@@ -90,7 +90,7 @@ export class JournalsController {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
       const res = await axios.get(api);
       if (res.status === 200 || res.status === 201) {
-        const {city, countryName, regionName, latitude, longitude} = res.data;
+        const { city, countryName, regionName, latitude, longitude } = res.data;
         user = {
           city,
           country: countryName,

@@ -16,6 +16,7 @@ import * as moment from 'moment';
 import { Cron } from '@nestjs/schedule';
 import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
 import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
+import { BlockedUsersEntity } from './entities/blocked_user.entity';
 
 dotEnv.config();
 
@@ -26,6 +27,8 @@ export class UsersService {
     private usersRepository: MongoRepository<User>,
     @InjectRepository(LinkedAccountUserEntity)
     private linkedAccountUserEntityMongoRepository: MongoRepository<LinkedAccountUserEntity>,
+    @InjectRepository(BlockedUsersEntity)
+    private blockedUsersEntityMongoRepository: MongoRepository<BlockedUsersEntity>,
     @InjectRepository(DeleteUserEntity)
     private deleteUserEntityMongoRepository: MongoRepository<DeleteUserEntity>,
     private emailService: EmailService,
@@ -250,5 +253,22 @@ export class UsersService {
       { id: user.id },
       { isBanned: !user.isBanned },
     );
+  }
+  async blockUnblockUser(currentUser: User, blockedTo: ObjectId) {
+    const blockedEntity =
+      await this.blockedUsersEntityMongoRepository.findOneBy({
+        blockedBy: currentUser.id,
+        blockedTo: new ObjectId(blockedTo),
+      });
+    if (blockedEntity) {
+      await this.blockedUsersEntityMongoRepository.deleteOne({
+        _id: blockedEntity.id,
+      });
+    } else {
+      await this.blockedUsersEntityMongoRepository.save({
+        blockedBy: currentUser.id,
+        blockedTo: new ObjectId(blockedTo),
+      });
+    }
   }
 }

@@ -24,6 +24,7 @@ import { NotificationEntity } from './notifications/entities/notification.entity
 import { ReportEntity } from './report/entities/report.entity';
 import { ReportModule } from './report/report.module';
 import { LinkedAccountUserEntity } from './users/entities/linked_account_user.entity';
+import { BlockedUsersEntity } from "./users/entities/blocked_user.entity";
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { LinkedAccountUserEntity } from './users/entities/linked_account_user.en
         NotificationEntity,
         ReportEntity,
         LinkedAccountUserEntity,
+        BlockedUsersEntity,
       ],
       ssl: false,
       useUnifiedTopology: true,

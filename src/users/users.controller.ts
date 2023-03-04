@@ -100,4 +100,9 @@ export class UsersController {
   async banUser(@Param('userId') userId: string) {
     return this.userService.banUnbanUser(userId);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('blockUnblockUser/:userId')
+  async blockUnblockUser(@Request() req, @Param('userId') userId: string) {
+    return this.userService.blockUnblockUser(req.user, userId);
+  }
 }

@@ -8,6 +8,7 @@ import { ObjectId } from 'mongodb';
 import { UpdateJournalDto } from './dto/update-journal.dto';
 import { UsersService } from '../users/users.service';
 import { ReportService } from '../report/report.service';
+import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 
 const monthNames = [
   'January',
@@ -29,6 +30,8 @@ export class JournalsService {
   constructor(
     @InjectRepository(Journal)
     private journalMongoRepository: MongoRepository<Journal>,
+    @InjectRepository(BlockedUsersEntity)
+    private blockedUsersEntityMongoRepository: MongoRepository<BlockedUsersEntity>,
     private userService: UsersService,
     private reportService: ReportService,
   ) {}
@@ -423,6 +426,26 @@ export class JournalsService {
       matchQuery.$match = {
         type: 'public',
         status: { $nin: ['deleted', 'removed'] },
+      };
+    }
+    if (user.id) {
+      const blocked = await this.blockedUsersEntityMongoRepository.findBy({
+        $or: [{ blockedBy: user.id }, { blockedTo: user.id }],
+      });
+      const blockedUsers = [];
+      for (const u of blocked) {
+        if (u.blockedBy.toString() !== user.id.toString()) {
+          blockedUsers.push(u.blockedBy);
+        } else {
+          blockedUsers.push(u.blockedTo);
+        }
+      }
+      const removeBlockedDataQuery = {
+        createdBy: { $nin: blockedUsers },
+      };
+      matchQuery.$match = {
+        ...matchQuery.$match,
+        ...removeBlockedDataQuery,
       };
     }
     return this.journalMongoRepository

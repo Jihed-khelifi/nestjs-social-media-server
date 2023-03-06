@@ -254,6 +254,9 @@ export class UsersService {
       { isBanned: !user.isBanned },
     );
   }
+  async getBannedUsers() {
+    return this.usersRepository.findBy({ isBanned: true });
+  }
   async blockUnblockUser(currentUser: User, blockedTo: ObjectId) {
     const blockedEntity =
       await this.blockedUsersEntityMongoRepository.findOneBy({

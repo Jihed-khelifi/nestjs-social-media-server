@@ -448,6 +448,26 @@ export class JournalsService {
         ...removeBlockedDataQuery,
       };
     }
+    const bannedUsers = await this.userService.getBannedUsers();
+    if (bannedUsers.length) {
+      const removeBannedDataQuery = {
+        createdBy: { $nin: bannedUsers.map((u) => u.id) },
+      };
+      if (
+        matchQuery.$match['createdBy'] &&
+        matchQuery.$match['createdBy']['$nin']
+      ) {
+        matchQuery.$match['createdBy']['$nin'] = [
+          ...matchQuery.$match['createdBy']['$nin'],
+          ...bannedUsers.map((u) => u.id),
+        ];
+      } else {
+        matchQuery.$match = {
+          ...matchQuery.$match,
+          ...removeBannedDataQuery,
+        };
+      }
+    }
     return this.journalMongoRepository
       .aggregate([
         { ...matchQuery },

@@ -223,7 +223,7 @@ export class NotificationsService {
     userId,
     mentions: string[],
   ) {
-    const posts = await this.journalsService.getPostsByCondition({
+    const posts = await this.journalsService.getPostsByCondition(null, {
       _id: postId,
     });
     const post = posts[0];

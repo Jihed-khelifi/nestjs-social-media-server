@@ -42,8 +42,8 @@ export class JournalsController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('getSingle/:postId')
-  getPostById(@Param('postId') postId: string) {
-    return this.journalsService.getPostsByCondition({
+  getPostById(@Request() req, @Param('postId') postId: string) {
+    return this.journalsService.getPostsByCondition(req.user, {
       _id: new ObjectId(postId),
     });
   }

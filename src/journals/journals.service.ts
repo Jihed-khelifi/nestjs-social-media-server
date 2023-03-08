@@ -49,7 +49,7 @@ export class JournalsService {
 
   getMyPostsOfDate(user: User, date: string) {
     const startDate = new Date(date);
-    return this.getPostsByCondition({
+    return this.getPostsByCondition(null, {
       createdBy: new ObjectId(user.id),
       createdAt: {
         $gte: startDate,
@@ -97,10 +97,24 @@ export class JournalsService {
     return journal;
   }
 
-  async getPostsByCondition(matchCondition) {
+  async getPostsByCondition(user, matchCondition) {
     const matchQuery = {
       $match: matchCondition,
     };
+    const blockedUsers = [];
+    if (user) {
+      const blocked = await this.blockedUsersEntityMongoRepository.findBy({
+        $or: [{ blockedBy: user.id }, { blockedTo: user.id }],
+      });
+      for (const u of blocked) {
+        if (u.blockedBy.toString() !== user.id.toString()) {
+          blockedUsers.push(u.blockedBy);
+        } else {
+          blockedUsers.push(u.blockedTo);
+        }
+      }
+    }
+    const bannedUsers = await this.userService.getBannedUsers();
     return this.journalMongoRepository
       .aggregate([
         { ...matchQuery },
@@ -132,6 +146,9 @@ export class JournalsService {
               {
                 $match: {
                   commentId: null,
+                  userId: {
+                    $nin: [...blockedUsers, ...bannedUsers.map((u) => u.id)],
+                  },
                 },
               },
               {
@@ -140,6 +157,16 @@ export class JournalsService {
                   localField: '_id',
                   foreignField: 'commentId',
                   pipeline: [
+                    {
+                      $match: {
+                        userId: {
+                          $nin: [
+                            ...blockedUsers,
+                            ...bannedUsers.map((u) => u.id),
+                          ],
+                        },
+                      },
+                    },
                     {
                       $lookup: {
                         from: 'users',

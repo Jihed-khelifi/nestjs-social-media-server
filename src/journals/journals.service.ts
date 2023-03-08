@@ -428,11 +428,11 @@ export class JournalsService {
         status: { $nin: ['deleted', 'removed'] },
       };
     }
+    const blockedUsers = [];
     if (user.id) {
       const blocked = await this.blockedUsersEntityMongoRepository.findBy({
         $or: [{ blockedBy: user.id }, { blockedTo: user.id }],
       });
-      const blockedUsers = [];
       for (const u of blocked) {
         if (u.blockedBy.toString() !== user.id.toString()) {
           blockedUsers.push(u.blockedBy);
@@ -512,6 +512,9 @@ export class JournalsService {
               {
                 $match: {
                   commentId: null,
+                  userId: {
+                    $nin: [...blockedUsers, ...bannedUsers.map((u) => u.id)],
+                  },
                 },
               },
               {
@@ -520,6 +523,16 @@ export class JournalsService {
                   localField: '_id',
                   foreignField: 'commentId',
                   pipeline: [
+                    {
+                      $match: {
+                        userId: {
+                          $nin: [
+                            ...blockedUsers,
+                            ...bannedUsers.map((u) => u.id),
+                          ],
+                        },
+                      },
+                    },
                     {
                       $lookup: {
                         from: 'users',

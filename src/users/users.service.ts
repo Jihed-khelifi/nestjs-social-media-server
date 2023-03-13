@@ -274,4 +274,31 @@ export class UsersService {
       });
     }
   }
+  async getBlockedUsers(user) {
+    return this.blockedUsersEntityMongoRepository
+      .aggregate([
+        {
+          $match: {
+            blockedBy: user.id,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'blockedTo',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: '$user' },
+        {
+          $project: {
+            _id: 0,
+            id: '$user._id',
+            username: '$user.username',
+          },
+        },
+      ])
+      .toArray();
+  }
 }

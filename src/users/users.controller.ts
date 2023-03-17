@@ -103,7 +103,9 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('blockUnblockUser/:userId')
   async blockUnblockUser(@Request() req, @Param('userId') userId: string) {
-    return this.userService.blockUnblockUser(req.user, userId);
+    if (req.user) {
+      return this.userService.blockUnblockUser(req.user, userId);
+    }
   }
   @UseGuards(JwtAuthGuard)
   @Get('getBlockedUsers')

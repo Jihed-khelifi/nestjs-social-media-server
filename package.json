@@ -39,6 +39,7 @@
     "handlebars": "^4.7.7",
     "moment": "^2.29.4",
     "mongodb": "^3.7.3",
+    "morgan": "^1.10.0",
     "nestjs-real-ip": "^2.2.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",

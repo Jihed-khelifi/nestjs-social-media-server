@@ -24,7 +24,9 @@ import { NotificationEntity } from './notifications/entities/notification.entity
 import { ReportEntity } from './report/entities/report.entity';
 import { ReportModule } from './report/report.module';
 import { LinkedAccountUserEntity } from './users/entities/linked_account_user.entity';
-import { BlockedUsersEntity } from "./users/entities/blocked_user.entity";
+import { BlockedUsersEntity } from './users/entities/blocked_user.entity';
+import { ConnectionsModule } from './connections/connections.module';
+import { ConnectionEntity } from './connections/entities/connections.entity';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { BlockedUsersEntity } from "./users/entities/blocked_user.entity";
         ReportEntity,
         LinkedAccountUserEntity,
         BlockedUsersEntity,
+        ConnectionEntity,
       ],
       ssl: false,
       useUnifiedTopology: true,
@@ -62,6 +65,7 @@ import { BlockedUsersEntity } from "./users/entities/blocked_user.entity";
     NotificationsModule,
     ReportModule,
     ScheduleModule.forRoot(),
+    ConnectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

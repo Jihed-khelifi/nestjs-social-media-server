@@ -1,5 +1,6 @@
 import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
 import { LocationType } from '../dto/create-user.dto';
+import { ConnectionEntity } from 'src/connections/entities/connections.entity';
 
 @Entity('users')
 export class User {
@@ -74,4 +75,7 @@ export class User {
 
   @Column()
   title: string;
+
+  @Column({ default: [] })
+  connections: ConnectionEntity[];
 }

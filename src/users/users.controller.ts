@@ -112,4 +112,10 @@ export class UsersController {
   async getBlockedUsers(@Request() req) {
     return this.userService.getBlockedUsers(req.user);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getUser')
+  async getUser(@Request() req) {
+    return this.userService.findOne(req.user.id);
+  }
 }

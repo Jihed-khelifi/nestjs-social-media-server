@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { MongoRepository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -17,6 +23,7 @@ import { Cron } from '@nestjs/schedule';
 import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
 import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
 import { BlockedUsersEntity } from './entities/blocked_user.entity';
+import { ConnectionsService } from 'src/connections/connections.service';
 
 dotEnv.config();
 
@@ -34,6 +41,8 @@ export class UsersService {
     private emailService: EmailService,
     private authService: AuthService,
     private themeService: ThemesService,
+    @Inject(forwardRef(() => ConnectionsService))
+    private connectionService: ConnectionsService,
   ) {
     usersRepository.createCollectionIndex({ location: '2dsphere' }).then();
   }
@@ -72,6 +81,12 @@ export class UsersService {
       user.id,
     );
     user.theme = theme._id;
+    const connection = await this.connectionService.createConnection({
+      userId: user.id,
+      followers: [],
+      following: [],
+    });
+    user.connection = connection.id;
     await this.updateUser(user.id, { ...user });
     await this.sendOtp(user);
     return this.authService.login(user, true);

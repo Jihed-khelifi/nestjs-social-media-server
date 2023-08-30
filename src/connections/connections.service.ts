@@ -1,17 +1,18 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository, ObjectID } from 'typeorm';
 import { ConnectionEntity } from './entities/connections.entity';
 import { User } from 'src/users/entities/user.entity';
 import { ObjectId } from 'mongodb';
 import { UsersService } from 'src/users/users.service';
+import { CreateConnectionsDto } from './dto/create-connection.dto';
 
 @Injectable()
 export class ConnectionsService {
   constructor(
     @InjectRepository(ConnectionEntity)
     private connectionMongoRepository: MongoRepository<ConnectionEntity>,
-    @Inject(UsersService)
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
   ) {}
 
@@ -19,51 +20,56 @@ export class ConnectionsService {
     return this.connectionMongoRepository.find({});
   }
 
-  async getFollowers(userId: ObjectID) {
+  async deleteAll() {
+    return this.connectionMongoRepository.deleteMany({});
+  }
+
+  async createConnection(connectionDto: CreateConnectionsDto) {
+    return this.connectionMongoRepository.save({
+      ...connectionDto,
+    });
+  }
+
+  async getFollowers(user: User) {
+    console.log(user);
     return this.connectionMongoRepository
       .aggregate([
         {
           $match: {
-            userId: userId,
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'followers.userId',
-            foreignField: 'id',
-            as: 'followers',
+            _id: user.connection,
           },
         },
         {
           $project: {
-            _id: 0,
+            _id: 1,
             followers: 1,
+            userId: 1,
           },
         },
       ])
       .toArray();
   }
 
-  async getFollowing(userId: ObjectID) {
+  async getFollowing(user: User) {
     return this.connectionMongoRepository
       .aggregate([
         {
           $match: {
-            userId: userId,
+            _id: user.connection,
           },
         },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'following.userId',
-            foreignField: 'id',
-            as: 'following',
-          },
-        },
+        // {
+        //   $lookup: {
+        //     from: 'users',
+        //     localField: 'following.userId',
+        //     foreignField: 'id',
+        //     as: 'following',
+        //   },
+        // },
         {
           $project: {
-            _id: 0,
+            _id: 1,
+            userId: 1,
             following: 1,
           },
         },
@@ -71,64 +77,137 @@ export class ConnectionsService {
       .toArray();
   }
 
-  async follow(userId: ObjectID, userToFollowId) {
+  async follow(user: User, userToFollowId: ObjectID) {
     const bulk = this.connectionMongoRepository.initializeUnorderedBulkOp({});
+    const userToFollowDoc = await this.usersService.findOne(userToFollowId);
     bulk
-      .find({ userId: userId })
+      .find({ _id: userToFollowDoc.connection })
       .upsert()
       .updateOne({
         $addToSet: {
           followers: {
-            userId: new ObjectId(userId),
-            username: (await this.usersService.findOne(userId)).username,
+            userId: user.id,
+            username: user.username,
           },
+        },
+        $set: {
+          userId: userToFollowId,
         },
       });
 
     bulk
-      .find({ userId: userId })
+      .find({ _id: user.connection })
       .upsert()
       .updateOne({
         $addToSet: {
           following: {
-            userId: new ObjectId(userToFollowId),
-            username: (await this.usersService.findOne(userToFollowId))
-              .username,
+            userId: userToFollowId,
+            username: userToFollowDoc.username,
           },
+        },
+        $set: {
+          userId: user.id,
         },
       });
 
     await bulk.execute();
+
+    const userToFollowConnection =
+      await this.connectionMongoRepository.findOneBy({
+        where: {
+          userId: userToFollowId,
+          followers: { $elemMatch: { userId: user.id } },
+          // following: { $elemMatch: { userId: userToFollowId } },
+        },
+      });
+
+    const currentUserConnection =
+      await this.connectionMongoRepository.findOneBy({
+        userId: user.id,
+        // followers: { $elemMatch: { userId: userToFollowId } },
+        following: { $elemMatch: { userId: user.id } },
+      });
+
+    // If both conditions are met, set isConnected to true for both users
+    if (userToFollowConnection && currentUserConnection) {
+      await this.connectionMongoRepository.updateOne(
+        { userId: userToFollowId },
+        { $set: { 'following.isConnected': true } },
+      );
+      console.log('jihed');
+      await this.connectionMongoRepository.updateOne(
+        { userId: userToFollowId },
+        { $set: { 'followers.isConnected': true } },
+      );
+
+      await this.connectionMongoRepository.updateOne(
+        { userId: user.id },
+        { $set: { 'followers.isConnected': true } },
+      );
+      await this.connectionMongoRepository.updateOne(
+        { userId: user.id },
+        { $set: { 'following.isConnected': true } },
+      );
+    }
     return this.connectionMongoRepository.find({});
   }
 
-  async unfollow(userId: ObjectId, userToUnfollowId: ObjectID) {
+  async unfollow(user: User, userToUnfollowId: ObjectID) {
+    const userToUnFollowDoc = await this.usersService.findOne(userToUnfollowId);
+
     const bulk = this.connectionMongoRepository.initializeUnorderedBulkOp({});
     bulk
-      .find({ userId: userId })
+      .find({ _id: userToUnFollowDoc.connection })
       .upsert()
       .updateOne({
         $pull: {
           followers: {
-            userId: new ObjectId(userId),
-            username: (await this.usersService.findOne(userId)).username,
+            userId: user.id,
+            username: user.username,
           },
         },
+        // change isConnected status
       });
 
     bulk
-      .find({ userId: userId })
+      .find({ _id: user.connection })
       .upsert()
       .updateOne({
         $pull: {
           following: {
-            userId: new ObjectId(userToUnfollowId),
-            username: (await this.usersService.findOne(userToUnfollowId))
-              .username,
+            userId: userToUnfollowId,
+            username: userToUnFollowDoc.username,
           },
         },
       });
     await bulk.execute();
+
+    // const userToFollowConnection =
+    //   await this.connectionMongoRepository.findOneBy({
+    //     userId: userToUnfollowId,
+    //     followers: { $elemMatch: { user.id } },
+    //     following: { $elemMatch: { userId: userToUnfollowId } },
+    //   });
+
+    // const currentUserConnection =
+    //   await this.connectionMongoRepository.findOneBy({
+    //     userId: userId,
+    //     followers: { $elemMatch: { userId: userToUnfollowId } },
+    //     following: { $elemMatch: { userId } },
+    //   });
+
+    // // If both conditions are met, set isConnected to true for both users
+    // if (userToFollowConnection && currentUserConnection) {
+    //   await this.connectionMongoRepository.updateOne(
+    //     { userId: userToUnfollowId },
+    //     { $set: { isConnected: false } },
+    //   );
+
+    //   await this.connectionMongoRepository.updateOne(
+    //     { userId: userId },
+    //     { $set: { isConnected: false } },
+    //   );
+    // }
 
     return this.connectionMongoRepository.find({});
   }

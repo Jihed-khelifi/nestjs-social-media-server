@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { ThemesModule } from '../themes/themes.module';
 import { DeleteUserEntity } from './entities/delete_user.entity';
 import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
 import { BlockedUsersEntity } from './entities/blocked_user.entity';
+import { ConnectionsModule } from 'src/connections/connections.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { BlockedUsersEntity } from './entities/blocked_user.entity';
     EmailsModule,
     AuthModule,
     ThemesModule,
+    forwardRef(() => ConnectionsModule),
   ],
   controllers: [UsersController],
   providers: [UsersService],

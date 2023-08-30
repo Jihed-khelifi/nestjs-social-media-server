@@ -13,16 +13,15 @@ export class ConnectionEntity {
 
   @Column((type) => FollowCard)
   following: FollowCard[];
-
-  @Column()
-  isConnected: boolean;
 }
 
 @Entity('followcard')
 export class FollowCard {
   @ObjectIdColumn()
   userId: ObjectID;
-
   @Column()
   username: string;
+
+  @Column({ default: false })
+  isConnected: boolean;
 }

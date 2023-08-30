@@ -73,9 +73,8 @@ export class User {
   @Column()
   professionalCode: string;
 
-  @Column()
   title: string;
 
-  @ObjectIdColumn({ name: 'connections' })
-  connections: ObjectID;
+  @ObjectIdColumn({ name: 'connection' })
+  connection: ObjectID;
 }

@@ -31,7 +31,6 @@ export class ConnectionsService {
   }
 
   async getFollowers(user: User) {
-    console.log(user);
     return this.connectionMongoRepository
       .aggregate([
         {
@@ -58,14 +57,6 @@ export class ConnectionsService {
             _id: user.connection,
           },
         },
-        // {
-        //   $lookup: {
-        //     from: 'users',
-        //     localField: 'following.userId',
-        //     foreignField: 'id',
-        //     as: 'following',
-        //   },
-        // },
         {
           $project: {
             _id: 1,
@@ -134,7 +125,6 @@ export class ConnectionsService {
         { userId: userToFollowId },
         { $set: { 'following.isConnected': true } },
       );
-      console.log('jihed');
       await this.connectionMongoRepository.updateOne(
         { userId: userToFollowId },
         { $set: { 'followers.isConnected': true } },

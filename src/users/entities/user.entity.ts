@@ -76,6 +76,6 @@ export class User {
   @Column()
   title: string;
 
-  @Column({ default: [] })
-  connections: ConnectionEntity[];
+  @ObjectIdColumn({ name: 'connections' })
+  connections: ObjectID;
 }

@@ -18,11 +18,11 @@ export class ConnectionEntity {
   isConnected: boolean;
 }
 
-// @Entity('followcard')
+@Entity('followcard')
 export class FollowCard {
-  //   @Column()
+  @ObjectIdColumn()
   userId: ObjectID;
 
-  //   @Column()
+  @Column()
   username: string;
 }

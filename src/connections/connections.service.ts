@@ -99,6 +99,7 @@ export class ConnectionsService {
       });
 
     await bulk.execute();
+    return this.connectionMongoRepository.find({});
   }
 
   async unfollow(userId: ObjectId, userToUnfollowId: ObjectID) {
@@ -128,5 +129,7 @@ export class ConnectionsService {
         },
       });
     await bulk.execute();
+
+    return this.connectionMongoRepository.find({});
   }
 }

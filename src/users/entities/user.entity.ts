@@ -1,5 +1,5 @@
 import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
-import { LocationType } from '../dto/create-user.dto';
+
 import { ConnectionEntity } from 'src/connections/entities/connections.entity';
 
 @Entity('users')
@@ -36,9 +36,6 @@ export class User {
 
   @Column({ nullable: true })
   city: string;
-
-  @Column({ nullable: true })
-  location: LocationType;
 
   @ObjectIdColumn({ name: 'theme' })
   theme: ObjectID;

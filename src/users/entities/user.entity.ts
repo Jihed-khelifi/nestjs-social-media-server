@@ -68,6 +68,12 @@ export class User {
   previousAvatar: string;
 
   @Column({ default: false })
+  is_subscribed: boolean;
+
+  @Column({ default: '' })
+  subscription: string;
+
+  @Column({ default: false })
   deleteRequested: boolean;
 
   @Column({ default: false })

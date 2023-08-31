@@ -61,6 +61,12 @@ export class User {
   @Column({ default: false })
   isBanned: boolean;
 
+  @Column({ default: '' })
+  avatar: string;
+
+  @Column({ default: '' })
+  previousAvatar: string;
+
   @Column({ default: false })
   deleteRequested: boolean;
 

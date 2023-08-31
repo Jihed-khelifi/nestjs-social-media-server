@@ -316,4 +316,13 @@ export class UsersService {
       ])
       .toArray();
   }
+
+  async updateAvatar(user: User, updateUserDto: UpdateUserDto) {
+    const previousAvatar = user.avatar;
+    await this.usersRepository.update(
+      { id: user.id },
+      { ...updateUserDto, previousAvatar },
+    );
+    return await this.usersRepository.findOneById(user.id);
+  }
 }

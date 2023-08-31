@@ -114,6 +114,16 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Put('avatar')
+  async updateAvatar(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      return this.userService.updateAvatar(req.user, updateUserDto);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('getUser')
   async getUser(@Request() req) {
     return this.userService.findOne(req.user.id);

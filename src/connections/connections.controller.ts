@@ -8,12 +8,6 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class ConnectionsController {
   constructor(private readonly connectionsService: ConnectionsService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('getFollowing')
-  getFollowing(@Request() req) {
-    return this.connectionsService.getFollowing(req.user);
-  }
-
   @Get('all')
   getAll() {
     return this.connectionsService.getAll();
@@ -25,9 +19,15 @@ export class ConnectionsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('getFollowers')
-  getFollowers(@Request() req) {
-    return this.connectionsService.getFollowers(req.user);
+  @Get('getFollowing/:userId')
+  getFollowing(@Request() req, @Param('userId') userId) {
+    return this.connectionsService.getFollowing(req.user, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getFollowers/:userId')
+  getFollowers(@Request() req, @Param('userId') userId) {
+    return this.connectionsService.getFollowers(req.user, userId);
   }
 
   @UseGuards(JwtAuthGuard)

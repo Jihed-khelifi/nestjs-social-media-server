@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository, ObjectID } from 'typeorm';
 import { ConnectionEntity } from './entities/connections.entity';
 import { User } from 'src/users/entities/user.entity';
-import { ObjectId } from 'mongodb';
+import { ObjectID as ObjectId } from 'mongodb';
 import { UsersService } from 'src/users/users.service';
 import { CreateConnectionsDto } from './dto/create-connection.dto';
 
@@ -30,31 +30,56 @@ export class ConnectionsService {
     });
   }
 
-  async getFollowers(user: User) {
+  async getFollowers(connectedUser: User, userId: ObjectID) {
+    console.log(userId);
     return this.connectionMongoRepository
       .aggregate([
         {
           $match: {
-            _id: user.connection,
+            userId: userId,
           },
         },
         {
           $project: {
             _id: 1,
-            followers: 1,
             userId: 1,
+            followers: 1,
+            isFollowing: {
+              $cond: {
+                if: {
+                  $in: [new ObjectId(connectedUser.id), '$followers.userId'],
+                },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $unwind: {
+            path: '$followers',
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            isFollowing: 1,
+            followerId: '$followers.userId',
+            username: '$followers.username',
+            isConnected: '$followers.isConnected',
           },
         },
       ])
       .toArray();
   }
 
-  async getFollowing(user: User) {
+  async getFollowing(connectedUser: User, userId: ObjectID) {
     return this.connectionMongoRepository
       .aggregate([
         {
           $match: {
-            _id: user.connection,
+            userId: userId,
           },
         },
         {
@@ -62,6 +87,30 @@ export class ConnectionsService {
             _id: 1,
             userId: 1,
             following: 1,
+            isFollowing: {
+              $cond: {
+                if: {
+                  $in: [connectedUser.id, '$followers'],
+                },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $unwind: {
+            path: '$following',
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            followingUserId: '$following.userId',
+            isFollowing: 1,
+            username: '$following.username',
+            isConnected: '$following.isConnected',
           },
         },
       ])

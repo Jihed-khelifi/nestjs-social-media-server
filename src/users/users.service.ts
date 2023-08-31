@@ -170,6 +170,25 @@ export class UsersService {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);
   }
+  async updateAvatar(
+    user: User,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOneAndUpdate({
+      where: {
+        _id: user.id,
+      },
+    }, { ...updateUserDto });
+
+
+
+
+    user.previousAvatar = user.avatar;
+    user.avatar = req.avatar;
+
+    await this.usersRepository.update({ id }, { ...updateUserDto });
+    return await this.usersRepository.findOneById(id);
+  }
   async updateUser(id: ObjectId, updateUserDto: UpdateUserDto): Promise<User> {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);

@@ -22,6 +22,12 @@ export class User {
   password: string;
 
   @Column({ nullable: false })
+  avatar: string;
+
+  @Column({ nullable: false })
+  previous_avatar: string;
+
+  @Column({ nullable: false })
   otp: string;
 
   @Column()

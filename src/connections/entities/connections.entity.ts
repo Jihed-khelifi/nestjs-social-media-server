@@ -17,10 +17,14 @@ export class ConnectionEntity {
 
 @Entity('followcard')
 export class FollowCard {
-  @ObjectIdColumn()
+  @ObjectIdColumn({ name: 'userId' })
   userId: ObjectID;
+
   @Column()
   username: string;
+
+  @Column({ default: false })
+  isFollowing: boolean;
 
   @Column({ default: false })
   isConnected: boolean;

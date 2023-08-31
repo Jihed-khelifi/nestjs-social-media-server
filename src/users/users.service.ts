@@ -44,7 +44,7 @@ export class UsersService {
     @Inject(forwardRef(() => ConnectionsService))
     private connectionService: ConnectionsService,
   ) {
-    usersRepository.createCollectionIndex({ location: '2dsphere' }).then();
+    usersRepository.createCollectionIndex({}).then();
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -147,36 +147,6 @@ export class UsersService {
     });
   }
 
-  async getNearbyActiveUsers(user): Promise<User[]> {
-    return this.usersRepository
-      .aggregate([
-        {
-          $geoNear: {
-            near: user.location,
-            spherical: true,
-            distanceMultiplier: 0.001,
-            maxDistance: 200000,
-            distanceField: 'distance',
-          },
-        },
-        {
-          $match: {
-            isOnline: true,
-          },
-        },
-        {
-          $limit: 5000,
-        },
-        {
-          $project: {
-            id: '$_id',
-            _id: 0,
-          },
-        },
-      ])
-      .toArray();
-  }
-
   async updateDob(id: ObjectId, updateUserDto: UserDobDto): Promise<User> {
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);
@@ -197,6 +167,25 @@ export class UsersService {
         HttpStatus.BAD_GATEWAY,
       );
     }
+    await this.usersRepository.update({ id }, { ...updateUserDto });
+    return await this.usersRepository.findOneById(id);
+  }
+  async updateAvatar(
+    user: User,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOneAndUpdate({
+      where: {
+        _id: user.id,
+      },
+    }, { ...updateUserDto });
+
+
+
+
+    user.previousAvatar = user.avatar;
+    user.avatar = req.avatar;
+
     await this.usersRepository.update({ id }, { ...updateUserDto });
     return await this.usersRepository.findOneById(id);
   }
@@ -236,7 +225,7 @@ export class UsersService {
         $gte: new Date(moment().format('YYYY/MM/DD')),
         $lt: new Date(
           new Date(moment().format('YYYY/MM/DD')).getTime() +
-            60 * 60 * 24 * 1000,
+          60 * 60 * 24 * 1000,
         ),
       },
     });

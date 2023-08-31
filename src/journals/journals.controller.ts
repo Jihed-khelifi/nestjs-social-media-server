@@ -27,7 +27,7 @@ export class JournalsController {
   constructor(
     private readonly journalsService: JournalsService,
     private userService: UsersService,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -71,16 +71,12 @@ export class JournalsController {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
       await axios.get(api).then(async (res) => {
         if (res.status === 200 || res.status === 201) {
-          const { city, country, region, latitude, longitude } = res.data;
+          const { city, country, region, } = res.data;
           user = await this.userService.updateUser(new ObjectId(user.id), {
             ...{
               city,
               country,
               state: region,
-              location: {
-                type: 'Point',
-                coordinates: [longitude, latitude],
-              },
             },
           });
         }
@@ -90,15 +86,12 @@ export class JournalsController {
       const api = `${process.env.ABSTRACT_API_URL}&ip_address=${ip}`;
       const res = await axios.get(api);
       if (res.status === 200 || res.status === 201) {
-        const { city, countryName, regionName, latitude, longitude } = res.data;
+        const { city, countryName, regionName } = res.data;
         user = {
           city,
           country: countryName,
           state: regionName,
-          location: {
-            type: 'Point',
-            coordinates: [longitude, latitude],
-          },
+
         };
       }
     }

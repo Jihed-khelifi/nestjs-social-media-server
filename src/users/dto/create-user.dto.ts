@@ -12,7 +12,7 @@ export class CreateUserDto {
 
   @IsString()
   password: string;
-  
+
   @IsString()
   username: string;
 
@@ -28,14 +28,10 @@ export class CreateUserDto {
 
   @IsString()
   city: string;
-  
-  location: LocationType;
+
+
 
   isProfessional?: boolean;
 
   professionalCode: string;
-}
-export interface LocationType {
-  type: string;
-  coordinates: number[];
 }

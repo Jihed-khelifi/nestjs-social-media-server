@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository, ObjectID } from 'typeorm';
 import { ConnectionEntity } from './entities/connections.entity';
@@ -79,6 +79,7 @@ export class ConnectionsService {
           followers: {
             userId: user.id,
             username: user.username,
+            isConnected: false,
           },
         },
         $set: {
@@ -94,6 +95,7 @@ export class ConnectionsService {
           following: {
             userId: userToFollowId,
             username: userToFollowDoc.username,
+            isConnected: false,
           },
         },
         $set: {
@@ -103,40 +105,64 @@ export class ConnectionsService {
 
     await bulk.execute();
 
-    const userToFollowConnection =
-      await this.connectionMongoRepository.findOneBy({
-        where: {
-          userId: userToFollowId,
-          followers: { $elemMatch: { userId: user.id } },
-          // following: { $elemMatch: { userId: userToFollowId } },
+    const userToFollowConnection = await this.connectionMongoRepository
+      .aggregate([
+        {
+          $match: {
+            _id: userToFollowDoc.connection,
+          },
         },
-      });
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            followers: 1,
+            following: 1,
+          },
+        },
+      ])
+      .toArray();
 
-    const currentUserConnection =
-      await this.connectionMongoRepository.findOneBy({
-        userId: user.id,
-        // followers: { $elemMatch: { userId: userToFollowId } },
-        following: { $elemMatch: { userId: user.id } },
-      });
+    let mutualConnectionExists: number;
 
-    // If both conditions are met, set isConnected to true for both users
-    if (userToFollowConnection && currentUserConnection) {
+    if (userToFollowConnection.length) {
+      mutualConnectionExists = userToFollowConnection[0]?.following?.findIndex(
+        (follow) => follow.userId === user.id,
+      );
+    }
+
+    if (mutualConnectionExists) {
       await this.connectionMongoRepository.updateOne(
-        { userId: userToFollowId },
-        { $set: { 'following.isConnected': true } },
+        { _id: userToFollowDoc.connection },
+        {
+          $set: {
+            'followers.$[].isConnected': true,
+          },
+        },
       );
       await this.connectionMongoRepository.updateOne(
-        { userId: userToFollowId },
-        { $set: { 'followers.isConnected': true } },
+        { _id: userToFollowDoc.connection },
+        {
+          $set: {
+            'following.$[].isConnected': true,
+          },
+        },
       );
-
       await this.connectionMongoRepository.updateOne(
-        { userId: user.id },
-        { $set: { 'followers.isConnected': true } },
+        { _id: user.connection },
+        {
+          $set: {
+            'following.$[].isConnected': true,
+          },
+        },
       );
       await this.connectionMongoRepository.updateOne(
-        { userId: user.id },
-        { $set: { 'following.isConnected': true } },
+        { _id: user.connection },
+        {
+          $set: {
+            'followers.$[].isConnected': true,
+          },
+        },
       );
     }
     return this.connectionMongoRepository.find({});
@@ -154,9 +180,9 @@ export class ConnectionsService {
           followers: {
             userId: user.id,
             username: user.username,
+            isConnected: false,
           },
         },
-        // change isConnected status
       });
 
     bulk
@@ -167,38 +193,74 @@ export class ConnectionsService {
           following: {
             userId: userToUnfollowId,
             username: userToUnFollowDoc.username,
+            isConnected: false,
           },
         },
       });
     await bulk.execute();
 
-    // const userToFollowConnection =
-    //   await this.connectionMongoRepository.findOneBy({
-    //     userId: userToUnfollowId,
-    //     followers: { $elemMatch: { user.id } },
-    //     following: { $elemMatch: { userId: userToUnfollowId } },
-    //   });
+    const userToUnFollowConnection = await this.connectionMongoRepository
+      .aggregate([
+        {
+          $match: {
+            _id: userToUnFollowDoc.connection,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            followers: 1,
+            following: 1,
+          },
+        },
+      ])
+      .toArray();
 
-    // const currentUserConnection =
-    //   await this.connectionMongoRepository.findOneBy({
-    //     userId: userId,
-    //     followers: { $elemMatch: { userId: userToUnfollowId } },
-    //     following: { $elemMatch: { userId } },
-    //   });
+    let mutualConnectionExists: number;
 
-    // // If both conditions are met, set isConnected to true for both users
-    // if (userToFollowConnection && currentUserConnection) {
-    //   await this.connectionMongoRepository.updateOne(
-    //     { userId: userToUnfollowId },
-    //     { $set: { isConnected: false } },
-    //   );
+    if (userToUnFollowConnection.length) {
+      mutualConnectionExists =
+        userToUnFollowConnection[0]?.following?.findIndex(
+          (follow) => follow.userId === user.id,
+        );
+    }
 
-    //   await this.connectionMongoRepository.updateOne(
-    //     { userId: userId },
-    //     { $set: { isConnected: false } },
-    //   );
-    // }
+    if (mutualConnectionExists) {
+      await this.connectionMongoRepository.updateOne(
+        { _id: userToUnFollowDoc.connection },
+        {
+          $set: {
+            'followers.$[].isConnected': false,
+          },
+        },
+      );
+      await this.connectionMongoRepository.updateOne(
+        { _id: userToUnFollowDoc.connection },
+        {
+          $set: {
+            'following.$[].isConnected': false,
+          },
+        },
+      );
+      await this.connectionMongoRepository.updateOne(
+        { _id: user.connection },
+        {
+          $set: {
+            'following.$[].isConnected': false,
+          },
+        },
+      );
+      await this.connectionMongoRepository.updateOne(
+        { _id: user.connection },
+        {
+          $set: {
+            'followers.$[].isConnected': false,
+          },
+        },
+      );
+    }
 
-    return this.connectionMongoRepository.find({});
+    return HttpStatus.ACCEPTED;
   }
 }

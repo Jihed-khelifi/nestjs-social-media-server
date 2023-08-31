@@ -34,7 +34,7 @@ export class JournalsService {
     private blockedUsersEntityMongoRepository: MongoRepository<BlockedUsersEntity>,
     private userService: UsersService,
     private reportService: ReportService,
-  ) { }
+  ) {}
 
   create(createJournalDto: CreateJournalDto) {
     return this.journalMongoRepository.save(createJournalDto);
@@ -438,6 +438,17 @@ export class JournalsService {
         },
         status: { $nin: ['deleted', 'removed'] },
       };
+    } else if (type === 'local') {
+      const nearByActiveUsers = await this.userService.getNearbyActiveUsers(
+        user,
+      );
+      matchQuery.$match = {
+        type: 'public',
+        createdBy: {
+          $in: nearByActiveUsers.map((p) => new ObjectId(p.id)),
+        },
+        status: { $nin: ['deleted', 'removed'] },
+      };
     } else {
       matchQuery.$match = {
         type: 'public',
@@ -512,6 +523,7 @@ export class JournalsService {
             'user.activationKey': 0,
             'user.otp': 0,
             'user.otpSentAt': 0,
+            'user.location': 0,
             'user.isActive': 0,
             'user.country': 0,
             'user.state': 0,
@@ -580,6 +592,7 @@ export class JournalsService {
                         'user.activationKey': 0,
                         'user.otp': 0,
                         'user.otpSentAt': 0,
+                        'user.location': 0,
                         'user.isActive': 0,
                         'user.country': 0,
                         'user.state': 0,

@@ -21,14 +21,13 @@ import { UserUsernameDto } from './dto/user-username.dto';
 import * as bcrypt from 'bcrypt';
 import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
 import { AdminJwtAuthGuard } from '../auth/admin-jwt-auth.guard';
-import { UserAvatarDto } from './dto/update-user-avatar.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private userService: UsersService,
     private themeService: ThemesService,
-  ) { }
+  ) {}
   @UseGuards(JwtAuthGuard)
   @Put()
   updateDob(@Request() req, @Body() userDobDto: UserDobDto) {
@@ -54,15 +53,6 @@ export class UsersController {
   updateUsername(@Request() req, @Body() userUsernameDto: UserUsernameDto) {
     try {
       return this.userService.updateUsername(req.user.id, userUsernameDto);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  @UseGuards(JwtAuthGuard)
-  @Put('avatar')
-  updateAvatar(@Request() req, @Body() updateUserDto: UserAvatarDto) {
-    try {
-      return this.userService.updateAvatar(req.user, updateUserDto);
     } catch (e) {
       console.log(e);
     }

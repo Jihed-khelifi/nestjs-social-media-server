@@ -31,12 +31,11 @@ export class ConnectionsService {
   }
 
   async getFollowers(connectedUser: User, userId: ObjectID) {
-    console.log(userId);
     return this.connectionMongoRepository
       .aggregate([
         {
           $match: {
-            userId: userId,
+            userId: new ObjectId(userId),
           },
         },
         {
@@ -79,7 +78,7 @@ export class ConnectionsService {
       .aggregate([
         {
           $match: {
-            userId: userId,
+            userId: new ObjectId(userId),
           },
         },
         {
@@ -90,7 +89,7 @@ export class ConnectionsService {
             isFollowing: {
               $cond: {
                 if: {
-                  $in: [connectedUser.id, '$followers'],
+                  $in: [new ObjectId(connectedUser.id), '$followers.userId'],
                 },
                 then: true,
                 else: false,
@@ -120,196 +119,186 @@ export class ConnectionsService {
   async follow(user: User, userToFollowId: ObjectID) {
     const bulk = this.connectionMongoRepository.initializeUnorderedBulkOp({});
     const userToFollowDoc = await this.usersService.findOne(userToFollowId);
+    const userToFollowConnectionDoc =
+      await this.connectionMongoRepository.findOneBy({
+        userId: new ObjectId(userToFollowId),
+      });
+
+    if (userToFollowConnectionDoc) {
+      for (const follower of userToFollowConnectionDoc.followers) {
+        if (follower.userId.toString() === user.id.toString()) {
+          return {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: 'You already follow this user',
+          };
+        }
+      }
+    }
+
     bulk
-      .find({ _id: userToFollowDoc.connection })
+      .find({ userId: new ObjectId(userToFollowId) })
       .upsert()
       .updateOne({
         $addToSet: {
           followers: {
-            userId: user.id,
+            userId: new ObjectId(user.id),
             username: user.username,
             isConnected: false,
           },
         },
         $set: {
-          userId: userToFollowId,
+          userId: new ObjectId(userToFollowId),
         },
       });
 
     bulk
-      .find({ _id: user.connection })
+      .find({ userId: new ObjectId(user.id) })
       .upsert()
       .updateOne({
         $addToSet: {
           following: {
-            userId: userToFollowId,
+            userId: new ObjectId(userToFollowId),
             username: userToFollowDoc.username,
             isConnected: false,
           },
         },
         $set: {
-          userId: user.id,
+          userId: new ObjectId(user.id),
         },
       });
 
     await bulk.execute();
 
-    const userToFollowConnection = await this.connectionMongoRepository
-      .aggregate([
-        {
-          $match: {
-            _id: userToFollowDoc.connection,
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            userId: 1,
-            followers: 1,
-            following: 1,
-          },
-        },
-      ])
-      .toArray();
-
-    let mutualConnectionExists: number;
-
-    if (userToFollowConnection.length) {
-      mutualConnectionExists = userToFollowConnection[0]?.following?.findIndex(
-        (follow) => follow.userId === user.id,
-      );
+    if (userToFollowConnectionDoc) {
+      for (const followingUser of userToFollowConnectionDoc.following) {
+        if (followingUser.userId.toString() === user.id.toString()) {
+          const results = this.setConnectionStatus(user, userToFollowId, true);
+          return results;
+        }
+      }
     }
 
-    if (mutualConnectionExists) {
-      await this.connectionMongoRepository.updateOne(
-        { _id: userToFollowDoc.connection },
-        {
-          $set: {
-            'followers.$[].isConnected': true,
-          },
-        },
-      );
-      await this.connectionMongoRepository.updateOne(
-        { _id: userToFollowDoc.connection },
-        {
-          $set: {
-            'following.$[].isConnected': true,
-          },
-        },
-      );
-      await this.connectionMongoRepository.updateOne(
-        { _id: user.connection },
-        {
-          $set: {
-            'following.$[].isConnected': true,
-          },
-        },
-      );
-      await this.connectionMongoRepository.updateOne(
-        { _id: user.connection },
-        {
-          $set: {
-            'followers.$[].isConnected': true,
-          },
-        },
-      );
-    }
     return this.connectionMongoRepository.find({});
   }
 
   async unfollow(user: User, userToUnfollowId: ObjectID) {
     const userToUnFollowDoc = await this.usersService.findOne(userToUnfollowId);
 
+    const userToUnfollowConnectionDoc =
+      await this.connectionMongoRepository.findOneBy({
+        userId: new ObjectId(userToUnfollowId),
+      });
+
     const bulk = this.connectionMongoRepository.initializeUnorderedBulkOp({});
     bulk
-      .find({ _id: userToUnFollowDoc.connection })
+      .find({ userId: new ObjectId(userToUnFollowDoc.id) })
       .upsert()
       .updateOne({
         $pull: {
           followers: {
-            userId: user.id,
-            username: user.username,
-            isConnected: false,
+            userId: new ObjectId(user.id),
           },
         },
       });
 
     bulk
-      .find({ _id: user.connection })
+      .find({ userId: new ObjectId(user.id) })
       .upsert()
       .updateOne({
         $pull: {
           following: {
-            userId: userToUnfollowId,
-            username: userToUnFollowDoc.username,
-            isConnected: false,
+            userId: new ObjectId(userToUnfollowId),
           },
         },
       });
     await bulk.execute();
 
-    const userToUnFollowConnection = await this.connectionMongoRepository
-      .aggregate([
-        {
-          $match: {
-            _id: userToUnFollowDoc.connection,
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            userId: 1,
-            followers: 1,
-            following: 1,
-          },
-        },
-      ])
-      .toArray();
-
-    let mutualConnectionExists: number;
-
-    if (userToUnFollowConnection.length) {
-      mutualConnectionExists =
-        userToUnFollowConnection[0]?.following?.findIndex(
-          (follow) => follow.userId === user.id,
-        );
-    }
-
-    if (mutualConnectionExists) {
-      await this.connectionMongoRepository.updateOne(
-        { _id: userToUnFollowDoc.connection },
-        {
-          $set: {
-            'followers.$[].isConnected': false,
-          },
-        },
-      );
-      await this.connectionMongoRepository.updateOne(
-        { _id: userToUnFollowDoc.connection },
-        {
-          $set: {
-            'following.$[].isConnected': false,
-          },
-        },
-      );
-      await this.connectionMongoRepository.updateOne(
-        { _id: user.connection },
-        {
-          $set: {
-            'following.$[].isConnected': false,
-          },
-        },
-      );
-      await this.connectionMongoRepository.updateOne(
-        { _id: user.connection },
-        {
-          $set: {
-            'followers.$[].isConnected': false,
-          },
-        },
-      );
+    const newUserToUnfollowConnectionDoc =
+      await this.connectionMongoRepository.findOneBy({
+        userId: new ObjectId(userToUnfollowId),
+      });
+    for (const followingUser of newUserToUnfollowConnectionDoc.following) {
+      if (followingUser.userId.toString() === user.id.toString()) {
+        this.setConnectionStatus(user, userToUnfollowId, false);
+      }
     }
 
     return HttpStatus.ACCEPTED;
+  }
+
+  async setConnectionStatus(
+    user: User,
+    userToSetConnectionStatusId: ObjectID,
+    status: boolean,
+  ) {
+    const userToSetConnectionStatus =
+      await this.connectionMongoRepository.findOneBy({
+        userId: new ObjectId(userToSetConnectionStatusId),
+      });
+
+    if (!userToSetConnectionStatus) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'User not found',
+      };
+    }
+    for (const follower of userToSetConnectionStatus.followers) {
+      if (follower.userId.toString() === user.id.toString()) {
+        follower.isConnected = status;
+      }
+    }
+    for (const follower of userToSetConnectionStatus.following) {
+      if (follower.userId.toString() === user.id.toString()) {
+        follower.isConnected = status;
+      }
+    }
+
+    await this.connectionMongoRepository.updateOne(
+      {
+        userId: new ObjectId(userToSetConnectionStatusId),
+      },
+      {
+        $set: {
+          followers: userToSetConnectionStatus.followers,
+          following: userToSetConnectionStatus.following,
+        },
+      },
+    );
+
+    const userConnection = await this.connectionMongoRepository.findOneBy({
+      userId: new ObjectId(user.id),
+    });
+
+    if (!userConnection) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'User not found',
+      };
+    }
+    for (const follower of userConnection.followers) {
+      if (
+        follower.userId.toString() === userToSetConnectionStatusId.toString()
+      ) {
+        follower.isConnected = status;
+      }
+    }
+    for (const follower of userConnection.following) {
+      if (
+        follower.userId.toString() === userToSetConnectionStatusId.toString()
+      ) {
+        follower.isConnected = status;
+      }
+    }
+    return this.connectionMongoRepository.updateOne(
+      {
+        userId: new ObjectId(user.id),
+      },
+      {
+        $set: {
+          followers: userConnection.followers,
+          following: userConnection.following,
+        },
+      },
+    );
   }
 }

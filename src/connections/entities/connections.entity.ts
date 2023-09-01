@@ -17,8 +17,9 @@ export class ConnectionEntity {
 
 @Entity('followcard')
 export class FollowCard {
-  @ObjectIdColumn()
+  @ObjectIdColumn({ name: 'userId' })
   userId: ObjectID;
+
   @Column()
   username: string;
 

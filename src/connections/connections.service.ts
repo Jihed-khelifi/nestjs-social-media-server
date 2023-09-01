@@ -284,6 +284,132 @@ export class ConnectionsService {
     return userFollowings;
   }
 
+  async getConnections(connectedUser: User, userId: ObjectID) {
+    if (connectedUser.id.toString() === userId.toString()) {
+      return this.connectionMongoRepository
+        .aggregate([
+          {
+            $match: {
+              userId: new ObjectId(userId),
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              userId: 1,
+              connections: 1,
+              isConnected: {
+                $cond: {
+                  if: {
+                    $in: [
+                      new ObjectId(connectedUser.id),
+                      '$connections.userId',
+                    ],
+                  },
+                  then: true,
+                  else: false,
+                },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'connections.userId',
+              foreignField: '_id',
+              as: 'connectionUser',
+            },
+          },
+          {
+            $unwind: {
+              path: '$connections',
+            },
+          },
+          {
+            $addFields: {
+              isFollowing: true,
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              userId: 1,
+              connectionUser: 1,
+              isFollowing: 1,
+              isConnected: 1,
+            },
+          },
+        ])
+        .toArray();
+    }
+
+    const userConnections = await this.connectionMongoRepository
+      .aggregate([
+        {
+          $match: {
+            userId: new ObjectId(userId),
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            connections: 1,
+            isConnected: {
+              $cond: {
+                if: {
+                  $in: [new ObjectId(connectedUser.id), '$connections.userId'],
+                },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $unwind: {
+            path: '$connections',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'connections.userId',
+            foreignField: '_id',
+            as: 'connectionUser',
+          },
+        },
+
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            isConnected: 1,
+            connectionUser: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    const connectedUserConnectionDoc =
+      await this.connectionMongoRepository.findOneBy({
+        userId: new ObjectId(connectedUser.id),
+      });
+
+    for (let i = 0; i < userConnections.length; i++) {
+      userConnections[i].isFollowing = false;
+      for (const connectedUserFollowing of connectedUserConnectionDoc.following) {
+        if (
+          connectedUserFollowing.userId.toString() ===
+          userConnections[i].connectionUser[0]._id.toString()
+        ) {
+          userConnections[i].isFollowing = true;
+        }
+      }
+    }
+    return userConnections;
+  }
+
   async follow(user: User, userToFollowId: ObjectID) {
     const bulk = this.connectionMongoRepository.initializeUnorderedBulkOp({});
     const userToFollowConnectionDoc =

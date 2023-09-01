@@ -31,6 +31,12 @@ export class ConnectionsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('getConnections/:userId')
+  getConnections(@Request() req, @Param('userId') userId) {
+    return this.connectionsService.getConnections(req.user, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('followUser/:userToFollow')
   followUser(@Request() req, @Param('userToFollow') userToFollow) {
     return this.connectionsService.follow(req.user, userToFollow);

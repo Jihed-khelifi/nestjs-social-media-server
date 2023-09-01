@@ -9,6 +9,7 @@ import { UpdateJournalDto } from './dto/update-journal.dto';
 import { UsersService } from '../users/users.service';
 import { ReportService } from '../report/report.service';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
+import { ConnectionsService } from 'src/connections/connections.service';
 
 const monthNames = [
   'January',
@@ -34,6 +35,7 @@ export class JournalsService {
     private blockedUsersEntityMongoRepository: MongoRepository<BlockedUsersEntity>,
     private userService: UsersService,
     private reportService: ReportService,
+    private connectionsService: ConnectionsService,
   ) {}
 
   create(createJournalDto: CreateJournalDto) {
@@ -1097,5 +1099,29 @@ export class JournalsService {
       finalData.push(data);
     }
     return finalData;
+  }
+
+  async getFollowersPosts(user) {
+    const followersIds = await this.connectionsService.getFollowersIds(user);
+    const posts = await this.journalMongoRepository.findBy({
+      createdBy: { $in: followersIds },
+    });
+    return posts;
+  }
+  async getFollowingPosts(user) {
+    const followingIds = await this.connectionsService.getFollowingsIds(user);
+    const posts = await this.journalMongoRepository.findBy({
+      createdBy: { $in: followingIds },
+    });
+    return posts;
+  }
+  async getConnectionsPosts(user) {
+    const connectionsIds = await this.connectionsService.getConnectionsIds(
+      user,
+    );
+    const posts = await this.journalMongoRepository.findBy({
+      createdBy: { $in: connectionsIds },
+    });
+    return posts;
   }
 }

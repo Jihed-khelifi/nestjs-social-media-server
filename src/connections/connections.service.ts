@@ -567,4 +567,36 @@ export class ConnectionsService {
       },
     );
   }
+
+  async getFollowersIds(user): Promise<ObjectID[]> {
+    const userConnection = await this.connectionMongoRepository.findOneBy({
+      userId: new ObjectId(user.id),
+    });
+    const followersIds: ObjectID[] = [];
+    for (const follower of userConnection.followers) {
+      followersIds.push(follower.userId);
+    }
+    return followersIds;
+  }
+  async getFollowingsIds(user): Promise<ObjectID[]> {
+    const userConnection = await this.connectionMongoRepository.findOneBy({
+      userId: new ObjectId(user.id),
+    });
+    const followingsIds: ObjectID[] = [];
+    for (const following of userConnection.following) {
+      followingsIds.push(following.userId);
+    }
+    return followingsIds;
+  }
+
+  async getConnectionsIds(user): Promise<ObjectID[]> {
+    const userConnection = await this.connectionMongoRepository.findOneBy({
+      userId: new ObjectId(user.id),
+    });
+    const connectionsIds: ObjectID[] = [];
+    for (const connection of userConnection.connections) {
+      connectionsIds.push(connection.userId);
+    }
+    return connectionsIds;
+  }
 }

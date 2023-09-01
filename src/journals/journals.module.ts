@@ -6,12 +6,14 @@ import { Journal } from './entities/journal.entity';
 import { UsersModule } from '../users/users.module';
 import { ReportModule } from '../report/report.module';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
+import { ConnectionsModule } from 'src/connections/connections.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Journal, BlockedUsersEntity]),
     UsersModule,
     ReportModule,
+    ConnectionsModule,
   ],
   controllers: [JournalsController],
   providers: [JournalsService],

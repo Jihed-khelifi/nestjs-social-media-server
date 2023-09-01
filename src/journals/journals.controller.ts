@@ -20,7 +20,8 @@ import { RealIP } from 'nestjs-real-ip';
 import { UsersService } from '../users/users.service';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { AdminJwtAuthGuard } from '../auth/admin-jwt-auth.guard';
-const axios = require('axios').default;
+
+import axios from 'axios';
 
 @Controller('journals')
 export class JournalsController {
@@ -151,5 +152,21 @@ export class JournalsController {
   @Delete('removePostAdmin/:id')
   async removePostByAdmin(@Param('id') id: string) {
     return this.journalsService.removePostByAdmin(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getFollowersPosts')
+  async getFollowersPosts(@Request() req) {
+    return this.journalsService.getFollowersPosts(req.user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('getFollowingPosts')
+  async getFollowingPosts(@Request() req) {
+    return this.journalsService.getFollowingPosts(req.user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('getConnectionsPosts')
+  async getConnectionsPosts(@Request() req) {
+    return this.journalsService.getConnectionsPosts(req.user);
   }
 }

@@ -73,17 +73,23 @@ export class ConnectionsService {
             },
           },
           {
-            $addFields: {
-              isFollowing: true,
+            $unwind: {
+              path: '$follower',
             },
           },
           {
             $project: {
               _id: 1,
               userId: 1,
-              follower: 1,
-              isFollowing: 1,
               isConnected: 1,
+              'follower.first_name': 1,
+              'follower.last_name': 1,
+              'follower.username': 1,
+              'follower.avatar': 1,
+              'follower.isActive': 1,
+              'follower.isOnline': 1,
+              'follower._id': 1,
+              'follower.isProfessional': 1,
             },
           },
         ])
@@ -114,11 +120,6 @@ export class ConnectionsService {
           },
         },
         {
-          $unwind: {
-            path: '$followers',
-          },
-        },
-        {
           $lookup: {
             from: 'users',
             localField: 'followers.userId',
@@ -127,11 +128,28 @@ export class ConnectionsService {
           },
         },
         {
+          $unwind: {
+            path: '$followers',
+          },
+        },
+        {
+          $unwind: {
+            path: '$follower',
+          },
+        },
+        {
           $project: {
             _id: 1,
             userId: 1,
             isConnected: 1,
-            follower: 1,
+            'follower.first_name': 1,
+            'follower.last_name': 1,
+            'follower.username': 1,
+            'follower.avatar': 1,
+            'follower.isActive': 1,
+            'follower.isOnline': 1,
+            'follower._id': 1,
+            'follower.isProfessional': 1,
           },
         },
       ])
@@ -147,7 +165,7 @@ export class ConnectionsService {
       for (const connectedUserFollowing of connectedUserConnectionDoc.following) {
         if (
           connectedUserFollowing.userId.toString() ===
-          userFollowers[i].follower[0]._id.toString()
+          userFollowers[i].follower._id.toString()
         ) {
           userFollowers[i].isFollowing = true;
         }
@@ -199,17 +217,23 @@ export class ConnectionsService {
             },
           },
           {
-            $addFields: {
-              isFollowing: true,
+            $unwind: {
+              path: '$followingUser',
             },
           },
           {
             $project: {
               _id: 1,
               userId: 1,
-              followingUser: 1,
-              isFollowing: 1,
               isConnected: 1,
+              'followingUser.first_name': 1,
+              'followingUser.last_name': 1,
+              'followingUser.username': 1,
+              'followingUser.avatar': 1,
+              'followingUser.isActive': 1,
+              'followingUser.isOnline': 1,
+              'followingUser._id': 1,
+              'followingUser.isProfessional': 1,
             },
           },
         ])
@@ -241,11 +265,6 @@ export class ConnectionsService {
           },
         },
         {
-          $unwind: {
-            path: '$following',
-          },
-        },
-        {
           $lookup: {
             from: 'users',
             localField: 'following.userId',
@@ -254,11 +273,28 @@ export class ConnectionsService {
           },
         },
         {
+          $unwind: {
+            path: '$following',
+          },
+        },
+        {
+          $unwind: {
+            path: '$followingUser',
+          },
+        },
+        {
           $project: {
             _id: 1,
             userId: 1,
             isConnected: 1,
-            followingUser: 1,
+            'followingUser.first_name': 1,
+            'followingUser.last_name': 1,
+            'followingUser.username': 1,
+            'followingUser.avatar': 1,
+            'followingUser.isActive': 1,
+            'followingUser.isOnline': 1,
+            'followingUser._id': 1,
+            'followingUser.isProfessional': 1,
           },
         },
       ])
@@ -274,7 +310,7 @@ export class ConnectionsService {
       for (const connectedUserFollowing of connectedUserConnectionDoc.following) {
         if (
           connectedUserFollowing.userId.toString() ===
-          userFollowings[i].followingUser[0]._id.toString()
+          userFollowings[i].followingUser._id.toString()
         ) {
           userFollowings[i].isFollowing = true;
         }
@@ -326,8 +362,8 @@ export class ConnectionsService {
             },
           },
           {
-            $addFields: {
-              isFollowing: true,
+            $unwind: {
+              path: '$connectionUser',
             },
           },
           {
@@ -335,8 +371,8 @@ export class ConnectionsService {
               _id: 1,
               userId: 1,
               connectionUser: 1,
-              isFollowing: 1,
               isConnected: 1,
+              'connectionUser.password': 0,
             },
           },
         ])
@@ -386,6 +422,7 @@ export class ConnectionsService {
             userId: 1,
             isConnected: 1,
             connectionUser: 1,
+            'connectionUser.password': 0,
           },
         },
       ])

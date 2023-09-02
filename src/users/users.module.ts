@@ -10,6 +10,8 @@ import { DeleteUserEntity } from './entities/delete_user.entity';
 import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
 import { BlockedUsersEntity } from './entities/blocked_user.entity';
 import { ConnectionsModule } from 'src/connections/connections.module';
+import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { ConnectionsModule } from 'src/connections/connections.module';
     AuthModule,
     ThemesModule,
     forwardRef(() => ConnectionsModule),
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JournalsService } from './journals.service';
 import { JournalsController } from './journals.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,9 +11,9 @@ import { ConnectionsModule } from 'src/connections/connections.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Journal, BlockedUsersEntity]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     ReportModule,
-    ConnectionsModule,
+    forwardRef(() => ConnectionsModule),
   ],
   controllers: [JournalsController],
   providers: [JournalsService],

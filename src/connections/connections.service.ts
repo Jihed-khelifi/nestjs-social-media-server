@@ -6,6 +6,7 @@ import { User } from 'src/users/entities/user.entity';
 import { ObjectID as ObjectId } from 'mongodb';
 import { UsersService } from 'src/users/users.service';
 import { CreateConnectionsDto } from './dto/create-connection.dto';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ConnectionsService {
@@ -13,7 +14,9 @@ export class ConnectionsService {
     @InjectRepository(ConnectionEntity)
     private connectionMongoRepository: MongoRepository<ConnectionEntity>,
     @Inject(forwardRef(() => UsersService))
-    private readonly usersService: UsersService,
+    private usersService: UsersService,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationService: NotificationsService,
   ) {}
 
   async getAll() {
@@ -499,10 +502,25 @@ export class ConnectionsService {
       userId: new ObjectId(user.id),
     });
 
+    let isConnection = false;
+
     for (const following of userConnection.following) {
       if (following.userId.toString() === userToFollowId.toString()) {
         await this.addConnection(user, userToFollowId);
+        isConnection = true;
       }
+    }
+
+    if (isConnection) {
+      this.notificationService.createNewConnectionNotification(
+        user.id,
+        userToFollowId,
+      );
+    } else {
+      this.notificationService.createNewFollowerNotification(
+        user.id,
+        userToFollowId,
+      );
     }
 
     return this.connectionMongoRepository.find({});

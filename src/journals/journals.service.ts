@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Inject, forwardRef } from '@nestjs/common';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository, Not } from 'typeorm';
@@ -33,8 +33,10 @@ export class JournalsService {
     private journalMongoRepository: MongoRepository<Journal>,
     @InjectRepository(BlockedUsersEntity)
     private blockedUsersEntityMongoRepository: MongoRepository<BlockedUsersEntity>,
+    @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
     private reportService: ReportService,
+    @Inject(forwardRef(() => ConnectionsService))
     private connectionsService: ConnectionsService,
   ) {}
 

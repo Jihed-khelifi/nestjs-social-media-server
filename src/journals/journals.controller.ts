@@ -36,11 +36,13 @@ export class JournalsController {
     createJournalDto.createdBy = new ObjectId(req.user.id);
     return this.journalsService.create(createJournalDto);
   }
+
   @UseGuards(JwtAuthGuard)
   @Put()
   update(@Request() req, @Body() updateJournalDto: UpdateJournalDto) {
     return this.journalsService.update(updateJournalDto);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getSingle/:postId')
   getPostById(@Request() req, @Param('postId') postId: string) {
@@ -48,17 +50,20 @@ export class JournalsController {
       _id: new ObjectId(postId),
     });
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('count/public')
   countPublicPosts(@Request() req) {
     return this.journalsService.countPublicPosts(req.user);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async getMyAllDataByDate(@Request() req) {
     const user = req.user;
     return this.journalsService.minePosts(user);
   }
+
   @UseGuards(OptionalJwtAuthGuard)
   @Get('community/:type')
   async getCommunityPosts(
@@ -105,6 +110,7 @@ export class JournalsController {
     }
     return this.journalsService.getCommunityPosts(user, type, page);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('changeUserOnlineStatus/:online')
   async changeUserOnlineStatus(
@@ -115,11 +121,13 @@ export class JournalsController {
       isOnline: online === 'true',
     });
   }
-  @UseGuards(JwtAuthGuard)
+  @Us
+  eGuards(JwtAuthGuard);
   @Get('getMyPostsOfDate/:date')
   async getMyPostsOfDate(@Param('date') date: string, @Request() req) {
     return this.journalsService.getMyPostsOfDate(req.user, date);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getMinutesOfEmotions/:month')
   async getMinutesOfEmotions(@Param('month') month: number, @Request() req) {
@@ -127,6 +135,7 @@ export class JournalsController {
       month: +month,
     });
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getMoodDistributionMonthly')
   async getMoodDistributionMonthly(@Request() req) {
@@ -134,6 +143,7 @@ export class JournalsController {
       req.user,
     );
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getInsightsData/:startDate/:endDate')
   async getInsightsData(
@@ -143,11 +153,13 @@ export class JournalsController {
   ) {
     return this.journalsService.getInsightsData(req.user, startDate, endDate);
   }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deletePost(@Param('id') id: string, @Request() req) {
     return this.journalsService.delete(id, req.user);
   }
+
   @UseGuards(AdminJwtAuthGuard)
   @Delete('removePostAdmin/:id')
   async removePostByAdmin(@Param('id') id: string) {
@@ -159,11 +171,13 @@ export class JournalsController {
   async getFollowersPosts(@Request() req) {
     return this.journalsService.getFollowersPosts(req.user);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getFollowingPosts')
   async getFollowingPosts(@Request() req) {
     return this.journalsService.getFollowingPosts(req.user);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getConnectionsPosts')
   async getConnectionsPosts(@Request() req) {

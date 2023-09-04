@@ -11,7 +11,6 @@ export class ReportService {
   constructor(
     @InjectRepository(ReportEntity)
     private reportEntityMongoRepository: MongoRepository<ReportEntity>,
-    private userService: UsersService,
   ) {}
 
   create(reportDto: ReportDto) {

@@ -422,6 +422,7 @@ export class JournalsService {
   }
 
   async getCommunityPosts(user: any, type: string, page: number) {
+    console.log(type);
     if (user.id) {
       await this.userService.updateUser(new ObjectId(user.id), {
         isOnline: true,
@@ -450,6 +451,35 @@ export class JournalsService {
         type: 'public',
         createdBy: {
           $in: nearByActiveUsers.map((p) => new ObjectId(p.id)),
+        },
+        status: { $nin: ['deleted', 'removed'] },
+      };
+    } else if (type === 'followers') {
+      const followersIds = await this.connectionsService.getFollowersIds(user);
+      matchQuery.$match = {
+        type: 'public',
+        createdBy: {
+          $in: followersIds,
+        },
+        status: { $nin: ['deleted', 'removed'] },
+      };
+    } else if (type === 'following') {
+      const followingIds = await this.connectionsService.getFollowingsIds(user);
+      matchQuery.$match = {
+        type: 'public',
+        createdBy: {
+          $in: followingIds,
+        },
+        status: { $nin: ['deleted', 'removed'] },
+      };
+    } else if (type === 'connected') {
+      const connectionsIds = await this.connectionsService.getConnectionsIds(
+        user,
+      );
+      matchQuery.$match = {
+        type: 'public',
+        createdBy: {
+          $in: connectionsIds,
         },
         status: { $nin: ['deleted', 'removed'] },
       };
@@ -1103,27 +1133,35 @@ export class JournalsService {
     return finalData;
   }
 
-  async getFollowersPosts(user) {
-    const followersIds = await this.connectionsService.getFollowersIds(user);
-    const posts = await this.journalMongoRepository.findBy({
-      createdBy: { $in: followersIds },
-    });
-    return posts;
-  }
-  async getFollowingPosts(user) {
-    const followingIds = await this.connectionsService.getFollowingsIds(user);
-    const posts = await this.journalMongoRepository.findBy({
-      createdBy: { $in: followingIds },
-    });
-    return posts;
-  }
-  async getConnectionsPosts(user) {
-    const connectionsIds = await this.connectionsService.getConnectionsIds(
-      user,
-    );
-    const posts = await this.journalMongoRepository.findBy({
-      createdBy: { $in: connectionsIds },
-    });
-    return posts;
+  async getConnectionsPosts(user, type: string) {
+    if (type === 'followers') {
+      const followersIds = await this.connectionsService.getFollowersIds(user);
+      const posts = await this.journalMongoRepository.findBy({
+        createdBy: { $in: followersIds },
+      });
+      return posts;
+    }
+
+    if (type === 'following') {
+      const followingIds = await this.connectionsService.getFollowingsIds(user);
+      const posts = await this.journalMongoRepository.findBy({
+        createdBy: { $in: followingIds },
+      });
+      return posts;
+    }
+
+    if (type === 'connected') {
+      const connectionsIds = await this.connectionsService.getConnectionsIds(
+        user,
+      );
+      const posts = await this.journalMongoRepository.findBy({
+        createdBy: { $in: connectionsIds },
+      });
+      return posts;
+    }
+
+    return {
+      error: 'Invalid Type',
+    };
   }
 }

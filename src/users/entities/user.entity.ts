@@ -1,5 +1,6 @@
 import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
-import { LocationType } from '../dto/create-user.dto';
+
+import { ConnectionEntity } from 'src/connections/entities/connections.entity';
 
 @Entity('users')
 export class User {
@@ -36,9 +37,6 @@ export class User {
   @Column({ nullable: true })
   city: string;
 
-  @Column({ nullable: true })
-  location: LocationType;
-
   @ObjectIdColumn({ name: 'theme' })
   theme: ObjectID;
 
@@ -60,6 +58,18 @@ export class User {
   @Column({ default: false })
   isBanned: boolean;
 
+  @Column({ default: '' })
+  avatar: string;
+
+  @Column({ default: '' })
+  previousAvatar: string;
+
+  @Column({ default: false })
+  is_subscribed: boolean;
+
+  @Column({ default: '' })
+  subscription: string;
+
   @Column({ default: false })
   deleteRequested: boolean;
 
@@ -72,6 +82,8 @@ export class User {
   @Column()
   professionalCode: string;
 
-  @Column()
   title: string;
+
+  @ObjectIdColumn({ name: 'connection' })
+  connection: ObjectID;
 }

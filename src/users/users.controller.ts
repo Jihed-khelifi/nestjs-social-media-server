@@ -27,7 +27,7 @@ export class UsersController {
   constructor(
     private userService: UsersService,
     private themeService: ThemesService,
-  ) {}
+  ) { }
   @UseGuards(JwtAuthGuard)
   @Put()
   updateDob(@Request() req, @Body() userDobDto: UserDobDto) {
@@ -111,5 +111,31 @@ export class UsersController {
   @Get('getBlockedUsers')
   async getBlockedUsers(@Request() req) {
     return this.userService.getBlockedUsers(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('avatar')
+  async updateAvatar(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      return this.userService.updateAvatar(req.user, updateUserDto);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('subscription')
+  async updateSubscription(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      return this.userService.updateUser(req.user.id, updateUserDto);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getUser')
+  async getUser(@Request() req) {
+    return this.userService.findOne(req.user.id);
   }
 }

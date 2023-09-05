@@ -27,6 +27,7 @@ import { LinkedAccountUserEntity } from './users/entities/linked_account_user.en
 import { BlockedUsersEntity } from './users/entities/blocked_user.entity';
 import { ConnectionsModule } from './connections/connections.module';
 import { ConnectionEntity } from './connections/entities/connections.entity';
+import { ReflectModule } from './reflect/reflect.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { ConnectionEntity } from './connections/entities/connections.entity';
     ReportModule,
     ScheduleModule.forRoot(),
     ConnectionsModule,
+    ReflectModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -85,6 +85,7 @@ export class UsersService {
       userId: user.id,
       followers: [],
       following: [],
+      connections: [],
     });
     user.connection = connection.id;
     await this.updateUser(user.id, { ...user });

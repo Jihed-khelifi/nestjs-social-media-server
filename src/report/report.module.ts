@@ -10,7 +10,7 @@ import { CommentsModule } from '../comments/comments.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([ReportEntity]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     forwardRef(() => CommentsModule),
     forwardRef(() => JournalsModule),
   ],

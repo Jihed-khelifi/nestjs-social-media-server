@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { NotificationEntity } from './entities/notification.entity';
@@ -20,9 +20,10 @@ export class NotificationsService {
 
   constructor(
     private journalsService: JournalsService,
-    private usersService: UsersService,
     @InjectRepository(NotificationEntity)
     private notificationEntityMongoRepository: MongoRepository<NotificationEntity>,
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
   ) {
     const configuration = OneSignal.createConfiguration({
       authMethods: {
@@ -245,7 +246,7 @@ export class NotificationsService {
       await this.sendNotification(
         notification.notificationMessage,
         [post.createdBy.toString()],
-        post,
+        { ...post },
       );
       await this.notificationEntityMongoRepository.save(notification);
     }
@@ -264,14 +265,65 @@ export class NotificationsService {
         await this.sendNotification(
           mentionNotification.notificationMessage,
           [mention.toString()],
-          post,
+          { ...post },
         );
         await this.notificationEntityMongoRepository.save(mentionNotification);
       }
     }
   }
 
-  async sendNotification(message, userIds, post) {
+  async createNewFollowerNotification(userId, followerId) {
+    const user = await this.usersService.findOne(userId);
+    const notification: any = {};
+    notification.notificationMessage = `${user.username} is now supporting you`;
+    notification.userId = userId;
+    notification.relatedUserId = followerId;
+    notification.createdAt = new Date();
+    notification.read = false;
+    notification.type = 'NEW_FOLLOWER';
+    await this.sendNotification(
+      notification.notificationMessage,
+      [userId.toString()],
+      followerId,
+    );
+    await this.notificationEntityMongoRepository.save(notification);
+  }
+
+  async createNewConnectionNotification(userId, userConnectionId) {
+    const user = await this.usersService.findOne(userId);
+    const notification: any = {};
+    notification.notificationMessage = `${user.username} is not connected to you`;
+    notification.userId = userId;
+    notification.relatedUserId = userConnectionId;
+    notification.createdAt = new Date();
+    notification.read = false;
+    notification.type = 'NEW_CONNECTION';
+    await this.sendNotification(
+      notification.notificationMessage,
+      [userId.toString()],
+      userConnectionId,
+    );
+    await this.notificationEntityMongoRepository.save(notification);
+  }
+
+  async createGiftNotification(userId, giftGiverId, gift) {
+    const user = await this.usersService.findOne(userId);
+    const notification: any = {};
+    notification.notificationMessage = `${user.username} sent you a gift`;
+    notification.userId = userId;
+    notification.relatedUserId = giftGiverId;
+    notification.createdAt = new Date();
+    notification.read = false;
+    notification.type = 'GIFT';
+    await this.sendNotification(
+      notification.notificationMessage,
+      [userId.toString()],
+      gift,
+    );
+    await this.notificationEntityMongoRepository.save(notification);
+  }
+
+  async sendNotification(message, userIds, data: any) {
     const notification = new OneSignal.Notification();
     notification.app_id = ONESIGNAL_APP_ID;
     notification.include_external_user_ids = userIds;
@@ -279,7 +331,7 @@ export class NotificationsService {
       en: message,
     };
     notification.data = {
-      ...post,
+      data,
     };
     await this.client.createNotification(notification);
   }

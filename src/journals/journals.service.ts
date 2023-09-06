@@ -422,7 +422,6 @@ export class JournalsService {
   }
 
   async getCommunityPosts(user: any, type: string, page: number) {
-    console.log(type);
     if (user.id) {
       await this.userService.updateUser(new ObjectId(user.id), {
         isOnline: true,

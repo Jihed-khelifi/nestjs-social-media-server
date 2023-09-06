@@ -523,7 +523,10 @@ export class ConnectionsService {
       );
     }
 
-    return this.connectionMongoRepository.find({});
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Followed successfully',
+    };
   }
 
   async unfollow(user: User, userToUnfollowId: ObjectID) {
@@ -564,7 +567,10 @@ export class ConnectionsService {
       this.removeConnection(user, userToUnfollowId);
     }
 
-    return HttpStatus.ACCEPTED;
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Unfollowed successfully',
+    };
   }
 
   async addConnection(user: User, userToSetConnectionStatusId: ObjectID) {
@@ -653,5 +659,11 @@ export class ConnectionsService {
       connectionsIds.push(connection.userId);
     }
     return connectionsIds;
+  }
+
+  async findOneBy(id: ObjectID) {
+    return await this.connectionMongoRepository.findOneBy({
+      userId: new ObjectId(id),
+    });
   }
 }

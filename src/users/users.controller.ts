@@ -133,6 +133,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+
   @Get('getUserProfileByUsername/:username')
   async getUser(@Request() req, @Param('username') username: string) {
     return this.userService.getUserProfileByUsername(req.user, username);
@@ -142,5 +143,19 @@ export class UsersController {
   @Get('searchByUsername/:username')
   async searchByUsername(@Request() req, @Param('username') username: string) {
     return this.userService.searchByUsername(req.user, username);
+
+  @Put('subscription')
+  async updateSubscription(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      return this.userService.updateUser(req.user.id, updateUserDto);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getUser')
+  async getUser(@Request() req) {
+    return this.userService.findOne(req.user.id);
   }
 }

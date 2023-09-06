@@ -1,6 +1,5 @@
 
 import { Emotion } from '../../emotions/entities/emotion.entity';
-import { LocationType } from '../../users/dto/create-user.dto';
 
 
 export class CreateJournalDto {

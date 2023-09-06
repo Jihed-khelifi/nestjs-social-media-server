@@ -27,7 +27,7 @@ export class UsersController {
   constructor(
     private userService: UsersService,
     private themeService: ThemesService,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Put()
@@ -144,18 +144,5 @@ export class UsersController {
   async searchByUsername(@Request() req, @Param('username') username: string) {
     return this.userService.searchByUsername(req.user, username);
 
-  @Put('subscription')
-  async updateSubscription(@Request() req, @Body() updateUserDto: UpdateUserDto) {
-    try {
-      return this.userService.updateUser(req.user.id, updateUserDto);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('getUser')
-  async getUser(@Request() req) {
-    return this.userService.findOne(req.user.id);
   }
 }

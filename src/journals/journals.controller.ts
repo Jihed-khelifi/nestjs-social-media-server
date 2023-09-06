@@ -121,8 +121,7 @@ export class JournalsController {
       isOnline: online === 'true',
     });
   }
-  @Us
-  eGuards(JwtAuthGuard);
+  @UseGuards(JwtAuthGuard)
   @Get('getMyPostsOfDate/:date')
   async getMyPostsOfDate(@Param('date') date: string, @Request() req) {
     return this.journalsService.getMyPostsOfDate(req.user, date);

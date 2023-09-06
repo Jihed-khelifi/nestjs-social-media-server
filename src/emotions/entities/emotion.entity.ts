@@ -9,5 +9,14 @@ export class Emotion {
   title: string;
 
   @Column()
+  description: string;
+
+  @Column()
+  definition: string;
+
+  @Column()
+  category: string;
+
+  @Column()
   type: string;
 }

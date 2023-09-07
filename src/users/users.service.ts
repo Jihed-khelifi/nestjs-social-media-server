@@ -289,6 +289,7 @@ export class UsersService {
         blockedBy: currentUser.id,
         blockedTo: new ObjectId(blockedTo),
       });
+      await this.connectionService.unfollow(currentUser, blockedTo);
     }
   }
   async getBlockedUsers(user) {

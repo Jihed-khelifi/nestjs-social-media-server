@@ -166,20 +166,8 @@ export class JournalsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('getFollowersPosts')
-  async getFollowersPosts(@Request() req) {
-    return this.journalsService.getFollowersPosts(req.user);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('getFollowingPosts')
-  async getFollowingPosts(@Request() req) {
-    return this.journalsService.getFollowingPosts(req.user);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('getConnectionsPosts')
-  async getConnectionsPosts(@Request() req) {
-    return this.journalsService.getConnectionsPosts(req.user);
+  @Get('getConnectionsPosts/:type')
+  async getConnectionsPosts(@Request() req, @Param('type') type: string) {
+    return this.journalsService.getConnectionsPosts(req.user, type);
   }
 }

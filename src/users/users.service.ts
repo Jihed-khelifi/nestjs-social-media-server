@@ -238,7 +238,7 @@ export class UsersService {
         $gte: new Date(moment().format('YYYY/MM/DD')),
         $lt: new Date(
           new Date(moment().format('YYYY/MM/DD')).getTime() +
-            60 * 60 * 24 * 1000,
+          60 * 60 * 24 * 1000,
         ),
       },
     });

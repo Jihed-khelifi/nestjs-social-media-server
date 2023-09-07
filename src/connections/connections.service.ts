@@ -307,7 +307,6 @@ export class ConnectionsService {
       await this.connectionMongoRepository.findOneBy({
         userId: new ObjectId(connectedUser.id),
       });
-
     for (let i = 0; i < userFollowings.length; i++) {
       userFollowings[i].isFollowing = false;
       for (const connectedUserFollowing of connectedUserConnectionDoc.following) {
@@ -337,6 +336,15 @@ export class ConnectionsService {
               _id: 1,
               userId: 1,
               connections: 1,
+              isFollowing: {
+                $cond: {
+                  if: {
+                    $in: [new ObjectId(connectedUser.id), '$following.userId'],
+                  },
+                  then: true,
+                  else: false,
+                },
+              },
               isConnected: {
                 $cond: {
                   if: {
@@ -635,7 +643,7 @@ export class ConnectionsService {
     });
     const followersIds: ObjectID[] = [];
     for (const follower of userConnection.followers) {
-      followersIds.push(follower.userId);
+      followersIds.push(new ObjectId(follower.userId));
     }
     return followersIds;
   }
@@ -645,7 +653,7 @@ export class ConnectionsService {
     });
     const followingsIds: ObjectID[] = [];
     for (const following of userConnection.following) {
-      followingsIds.push(following.userId);
+      followingsIds.push(new ObjectId(following.userId));
     }
     return followingsIds;
   }
@@ -656,7 +664,7 @@ export class ConnectionsService {
     });
     const connectionsIds: ObjectID[] = [];
     for (const connection of userConnection.connections) {
-      connectionsIds.push(connection.userId);
+      connectionsIds.push(new ObjectId(connection.userId));
     }
     return connectionsIds;
   }

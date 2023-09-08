@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { ReportModule } from '../report/report.module';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 import { ConnectionsModule } from 'src/connections/connections.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ConnectionsModule } from 'src/connections/connections.module';
     forwardRef(() => UsersModule),
     ReportModule,
     forwardRef(() => ConnectionsModule),
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [JournalsController],
   providers: [JournalsService],

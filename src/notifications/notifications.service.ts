@@ -1,11 +1,14 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from "@nestjs/common/decorators/core/injectable.decorator";
+import { Inject } from '@nestjs/common/decorators/core/inject.decorator';
+import { forwardRef } from '@nestjs/common/utils';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MongoRepository } from 'typeorm';
+import { MongoRepository, ObjectID } from 'typeorm';
 import { NotificationEntity } from './entities/notification.entity';
 import * as OneSignal from '@onesignal/node-onesignal';
 import { JournalsService } from '../journals/journals.service';
 import { UsersService } from '../users/users.service';
 import { ObjectId } from 'mongodb';
+import { User } from "src/users/entities/user.entity";
 
 const ONESIGNAL_APP_ID = '92a64123-4fb9-4c5b-90eb-b789794f168d';
 const app_key_provider = {
@@ -217,6 +220,13 @@ export class NotificationsService {
       ])
       .toArray();
   }
+
+  public async getUserNotifications(user: User) {
+    return this.notificationEntityMongoRepository.findBy({
+      userId: new ObjectId(user.id),
+    })
+  }  
+
   public async createCommentOnPostNotification(
     postId,
     commentId,
@@ -319,6 +329,40 @@ export class NotificationsService {
       notification.notificationMessage,
       [userId.toString()],
       gift,
+    );
+    await this.notificationEntityMongoRepository.save(notification);
+  }
+
+  async createAdminRemovedPostNotification(userId) {
+    const user = await this.usersService.findOne(userId);
+    const notification: any = {};
+    notification.notificationMessage = `Admin removed your post`;
+    notification.userId = userId;
+    notification.relatedUserId = userId;
+    notification.createdAt = new Date();
+    notification.read = false;
+    notification.type = 'ADMIN_REMOVED_POST';
+    await this.sendNotification(
+      notification.notificationMessage,
+      [userId.toString()],
+      userId,
+    );
+    await this.notificationEntityMongoRepository.save(notification);
+  }
+
+  async createAdminRemovedCommentNotification(userId: ObjectID) {
+    const user = await this.usersService.findOne(userId);
+    const notification: any = {};
+    notification.notificationMessage = `Admin removed your comment`;
+    notification.userId = userId;
+    notification.relatedUserId = userId;
+    notification.createdAt = new Date();
+    notification.read = false;
+    notification.type = 'ADMIN_REMOVED_COMMENT';
+    await this.sendNotification(
+      notification.notificationMessage,
+      [userId.toString()],
+      userId,
     );
     await this.notificationEntityMongoRepository.save(notification);
   }

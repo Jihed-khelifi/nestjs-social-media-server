@@ -10,6 +10,7 @@ import { UsersService } from '../users/users.service';
 import { ReportService } from '../report/report.service';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 import { ConnectionsService } from 'src/connections/connections.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 const monthNames = [
   'January',
@@ -38,6 +39,9 @@ export class JournalsService {
     private reportService: ReportService,
     @Inject(forwardRef(() => ConnectionsService))
     private connectionsService: ConnectionsService,
+    
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationService: NotificationsService
   ) {}
 
   create(createJournalDto: CreateJournalDto) {
@@ -95,6 +99,7 @@ export class JournalsService {
         { status: 'removed' },
       );
       await this.reportService.markStatus(id, 'removed');
+      await this.notificationService.createAdminRemovedPostNotification(journal.createdBy)
     } else {
       throw new HttpException('Not found', 404);
     }

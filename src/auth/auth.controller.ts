@@ -38,6 +38,10 @@ export class AuthController {
   async googleLogin(@Body() body: { idToken: string }) {
     return this.authService.validateGoogleUser(body.idToken);
   }
+  @Post('apple-login')
+  async validateAppleUser(@Body() body: { idToken: string }) {
+    return this.authService.validateAppleUser(body.idToken);
+  }
   @UseGuards(LocalAuthGuard)
   @Post('/professional-login')
   async professionalLogin(@Request() req) {

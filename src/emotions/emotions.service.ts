@@ -20,18 +20,19 @@ export class EmotionsService {
       .aggregate([
         {
           $group: {
-            _id: '$type',
-            emotions: { $addToSet: '$title' },
+            _id: '$category',
+            data: { $push: '$$ROOT' },
           },
         },
         {
           $project: {
             _id: 0,
-            type: '$_id',
-            emotions: 1,
-            category: 1,
-            description: 1,
-            definition: 1,
+            category: '$_id',
+            'data.type': 1,
+            'data.title': 1,
+            'data.category': 1,
+            'data.description': 1,
+            'data.definition': 1,
           },
         },
       ])

@@ -28,6 +28,7 @@ export class UsersController {
     private userService: UsersService,
     private themeService: ThemesService,
   ) { }
+
   @UseGuards(JwtAuthGuard)
   @Put()
   updateDob(@Request() req, @Body() userDobDto: UserDobDto) {
@@ -38,6 +39,7 @@ export class UsersController {
       console.log(e);
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('recoverAccount')
   recoverAccount(@Request() req) {
@@ -57,6 +59,7 @@ export class UsersController {
       console.log(e);
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Put('theme')
   async updateTheme(@Request() req, @Body() updateUserDto: UpdateUserDto) {
@@ -72,6 +75,7 @@ export class UsersController {
       console.log(e);
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Put('changePassword')
   async changePassword(@Request() req, @Body() updateUserDto: UpdateUserDto) {
@@ -81,11 +85,13 @@ export class UsersController {
     }
     throw new HttpException('Action not permitted.', HttpStatus.BAD_REQUEST);
   }
+
   @UseGuards(JwtAuthGuard)
   @Delete()
   async deleteAccount(@Request() req) {
     return this.userService.deleteAccount(req.user.id);
   }
+
   @UseGuards(JwtAuthGuard)
   @Post('requestShareDataToProfessional')
   async requestShareDataToProfessional(
@@ -95,11 +101,13 @@ export class UsersController {
       createLinkAccountUserDto,
     );
   }
+
   @UseGuards(AdminJwtAuthGuard)
   @Get('banUnbanUser/:userId')
   async banUser(@Param('userId') userId: string) {
     return this.userService.banUnbanUser(userId);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('blockUnblockUser/:userId')
   async blockUnblockUser(@Request() req, @Param('userId') userId: string) {
@@ -107,6 +115,7 @@ export class UsersController {
       return this.userService.blockUnblockUser(req.user, userId);
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('getBlockedUsers')
   async getBlockedUsers(@Request() req) {
@@ -124,18 +133,16 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('subscription')
-  async updateSubscription(@Request() req, @Body() updateUserDto: UpdateUserDto) {
-    try {
-      return this.userService.updateUser(req.user.id, updateUserDto);
-    } catch (e) {
-      console.log(e);
-    }
+
+  @Get('getUserProfileByUsername/:username')
+  async getUser(@Request() req, @Param('username') username: string) {
+    return this.userService.getUserProfileByUsername(req.user, username);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('getUser')
-  async getUser(@Request() req) {
-    return this.userService.findOne(req.user.id);
+  @Get('searchByUsername/:username')
+  async searchByUsername(@Request() req, @Param('username') username: string) {
+    return this.userService.searchByUsername(req.user, username);
+
   }
 }

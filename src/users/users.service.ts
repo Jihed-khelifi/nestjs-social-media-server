@@ -4,6 +4,7 @@ import {
   Injectable,
   Inject,
   forwardRef,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { MongoRepository } from 'typeorm';
@@ -288,6 +289,7 @@ export class UsersService {
         blockedBy: currentUser.id,
         blockedTo: new ObjectId(blockedTo),
       });
+      await this.connectionService.unfollow(currentUser, blockedTo);
     }
   }
   async getBlockedUsers(user) {
@@ -325,5 +327,128 @@ export class UsersService {
       { ...updateUserDto, previousAvatar },
     );
     return await this.usersRepository.findOneById(user.id);
+  }
+
+  async searchByUsername(user: User, username: string) {
+    const blockedUsers = [];
+    if (user) {
+      const blocked = await this.blockedUsersEntityMongoRepository.findBy({
+        $or: [{ blockedBy: user.id }, { blockedTo: user.id }],
+      });
+      for (const u of blocked) {
+        if (u.blockedBy.toString() !== user.id.toString()) {
+          blockedUsers.push(u.blockedBy);
+        } else {
+          blockedUsers.push(u.blockedTo);
+        }
+      }
+    }
+
+    const bannedUsers = await this.getBannedUsers();
+    return this.usersRepository
+      .aggregate([
+        {
+          $match: {
+            username: {
+              $regex: username,
+              $options: 'i',
+            },
+            _id: {
+              $nin: [...blockedUsers, ...bannedUsers],
+            },
+          },
+        },
+        {
+          $project: {
+            password: 0,
+            activationKey: 0,
+            otp: 0,
+            otpSentAt: 0,
+            isActive: 0,
+          },
+        },
+      ])
+      .toArray();
+  }
+
+  async getUserProfileByUsername(user: User, username: string) {
+    const usernameUserDoc = await this.usersRepository.findOneBy({
+      username,
+    });
+    const userConnection = await this.connectionService.findOneBy(user.id);
+    const userProfile = await this.usersRepository
+      .aggregate([
+        {
+          $match: {
+            username,
+          },
+        },
+        {
+          $lookup: {
+            from: 'posts',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'posts',
+          },
+        },
+        {
+          $project: {
+            isFollowing: {
+              $cond: {
+                if: {
+                  $in: [
+                    new ObjectId(usernameUserDoc.id),
+                    [
+                      ...userConnection.following.map(
+                        (userId) => new ObjectId(userId.userId),
+                      ),
+                    ],
+                  ],
+                },
+                then: true,
+                else: false,
+              },
+            },
+            isConnected: {
+              $cond: {
+                if: {
+                  $in: [
+                    new ObjectId(usernameUserDoc.id),
+                    [
+                      ...userConnection.connections.map(
+                        (userId) => new ObjectId(userId.userId),
+                      ),
+                    ],
+                  ],
+                },
+                then: true,
+                else: false,
+              },
+            },
+            first_name: 1,
+            last_name: 1,
+            username: 1,
+            avatar: 1,
+            posts: 1,
+            createdAt: 1,
+            title: 1,
+            country: 1,
+            state: 1,
+            city: 1,
+            location: 1,
+            isProfessional: 1,
+            isActive: 1,
+            dob: 1,
+            isOnline: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    if (userProfile.length === 0) {
+      throw new NotFoundException('User not found');
+    }
+
+    return { ...userProfile[0] };
   }
 }

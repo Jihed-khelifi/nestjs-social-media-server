@@ -588,6 +588,46 @@ export class ConnectionsService {
       message: 'Unfollowed successfully',
     };
   }
+  async removeSupporter(user: User, supporterUserId: ObjectID) {
+    const supporterUserDoc = await this.usersService.findOne(supporterUserId);
+    const bulk = this.connectionMongoRepository.initializeUnorderedBulkOp({});
+    bulk
+      .find({ userId: new ObjectId(user.id) })
+      .upsert()
+      .updateOne({
+        $pull: {
+          followers: {
+            userId: new ObjectId(user.id),
+          },
+        },
+      });
+
+    bulk
+      .find({ userId: new ObjectId(supporterUserDoc.id) })
+      .upsert()
+      .updateOne({
+        $pull: {
+          following: {
+            userId: new ObjectId(user.id),
+          },
+        },
+      });
+    await bulk.execute();
+    const userConnectionDoc = await this.connectionMongoRepository.findOneBy({
+      userId: new ObjectId(user.id),
+    });
+    for (const followingUser of userConnectionDoc.connections) {
+      if (followingUser.userId.toString() === supporterUserDoc.id.toString()) {
+        break;
+      }
+      await this.removeConnection(supporterUserDoc, user.id);
+    }
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Follower removed successfully',
+    };
+  }
 
   async addConnection(user: User, userToSetConnectionStatusId: ObjectID) {
     await this.connectionMongoRepository.updateOne(

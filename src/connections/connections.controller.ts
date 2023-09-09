@@ -47,4 +47,9 @@ export class ConnectionsController {
   unfollowUser(@Request() req, @Param('userToUnfollow') userToUnfollow) {
     return this.connectionsService.unfollow(req.user, userToUnfollow);
   }
+  @UseGuards(JwtAuthGuard)
+  @Post('removeSupporter/:supporterUser')
+  removeSupporter(@Request() req, @Param('supporterUser') supporterUser) {
+    return this.connectionsService.removeSupporter(req.user, supporterUser);
+  }
 }

@@ -21,9 +21,10 @@ export class CommentsController {
   @Post()
   create(@Request() req, @Body() createCommentDto: CreateCommentDto) {
     if (createCommentDto._id) {
-      return this.commentsService.editComment(
+      return this.commentsService.updateCommentWithPostId(
         createCommentDto._id,
         req.user.id,
+        createCommentDto.postId,
         createCommentDto.comment,
       );
     }
@@ -45,6 +46,21 @@ export class CommentsController {
     return this.commentsService.editComment(
       commentId,
       req.user.id,
+      body.message,
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put('updateComment/:postId/:commentId')
+  updateComment(
+    @Request() req,
+    @Param('postId') postId: string,
+    @Param('commentId') commentId: string,
+    @Body() body: { message },
+  ) {
+    return this.commentsService.updateCommentWithPostId(
+      commentId,
+      req.user.id,
+      postId,
       body.message,
     );
   }

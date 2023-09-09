@@ -28,6 +28,7 @@ import { BlockedUsersEntity } from './users/entities/blocked_user.entity';
 import { ConnectionsModule } from './connections/connections.module';
 import { ConnectionEntity } from './connections/entities/connections.entity';
 import { EncryptionService } from './utils/encryption.service';
+import { ConfigEntity } from './config.entity';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { EncryptionService } from './utils/encryption.service';
         LinkedAccountUserEntity,
         BlockedUsersEntity,
         ConnectionEntity,
+        ConfigEntity,
       ],
       ssl: false,
       useUnifiedTopology: true,

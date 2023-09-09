@@ -22,6 +22,7 @@ import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { AdminJwtAuthGuard } from '../auth/admin-jwt-auth.guard';
 
 import axios from 'axios';
+import { PostTypeJournalDto } from './dto/post-type-journal.dto';
 
 @Controller('journals')
 export class JournalsController {
@@ -34,13 +35,21 @@ export class JournalsController {
   @Post()
   create(@Request() req, @Body() createJournalDto: CreateJournalDto) {
     createJournalDto.createdBy = new ObjectId(req.user.id);
-    return this.journalsService.create(createJournalDto);
+    return this.journalsService.create(createJournalDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put()
   update(@Request() req, @Body() updateJournalDto: UpdateJournalDto) {
-    return this.journalsService.update(updateJournalDto);
+    return this.journalsService.update(updateJournalDto, req.user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put('changePostType')
+  changePostType(
+    @Request() req,
+    @Body() postTypeJournalDto: PostTypeJournalDto,
+  ) {
+    return this.journalsService.updatePostType(postTypeJournalDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -62,6 +71,11 @@ export class JournalsController {
   async getMyAllDataByDate(@Request() req) {
     const user = req.user;
     return this.journalsService.minePosts(user);
+  }
+  @UseGuards(AdminJwtAuthGuard)
+  @Get('getDeletedOrRemovedPosts')
+  async getDeletedPosts() {
+    return this.journalsService.getDeletedPosts();
   }
 
   @UseGuards(OptionalJwtAuthGuard)

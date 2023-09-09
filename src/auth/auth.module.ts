@@ -8,10 +8,13 @@ import { jwtConstants } from './constants';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { ThemesModule } from '../themes/themes.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigEntity } from '../config.entity';
 
 @Module({
   imports: [
     ThemesModule,
+    TypeOrmModule.forFeature([ConfigEntity]),
     forwardRef(() => UsersModule),
     PassportModule,
     JwtModule.register({

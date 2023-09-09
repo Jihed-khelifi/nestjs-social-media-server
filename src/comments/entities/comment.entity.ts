@@ -26,6 +26,9 @@ export class CommentEntity {
   @Column()
   status: string;
 
+  @Column({ default: false })
+  isEdited: boolean;
+
   @Column({ name: 'mentionedUsers' })
   mentionedUsers: ObjectID[];
 

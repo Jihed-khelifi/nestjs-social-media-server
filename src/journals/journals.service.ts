@@ -12,6 +12,7 @@ import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 import { ConnectionsService } from 'src/connections/connections.service';
 import { EncryptionService } from '../utils/encryption.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { PostTypeJournalDto } from './dto/post-type-journal.dto';
 
 const monthNames = [
   'January',
@@ -55,11 +56,26 @@ export class JournalsService {
     // }
     return this.journalMongoRepository.save(createJournalDto);
   }
-  update(updateJournalDto: UpdateJournalDto) {
+  update(updateJournalDto: UpdateJournalDto, user: User) {
     return this.journalMongoRepository.update(
-      new ObjectId(updateJournalDto.id),
+      {
+        id: new ObjectId(updateJournalDto.id),
+        createdBy: new ObjectId(user.id),
+      },
       { ...updateJournalDto, isEdited: true },
     );
+  }
+  async updatePostType(postTypeJournalDto: PostTypeJournalDto, user: User) {
+    await this.journalMongoRepository.update(
+      {
+        id: new ObjectId(postTypeJournalDto.id),
+        createdBy: new ObjectId(user.id),
+      },
+      { type: postTypeJournalDto.type },
+    );
+    return this.journalMongoRepository.findOne({
+      where: { id: new ObjectId(postTypeJournalDto.id) },
+    });
   }
 
   getMyPostsOfDate(user: User, date: string) {
@@ -268,6 +284,171 @@ export class JournalsService {
       .toArray();
   }
 
+  async getDeletedPosts() {
+    const matchQuery = {
+      $match: {},
+    };
+    matchQuery.$match = {
+      status: { $in: ['deleted', 'removed'] },
+    };
+    return this.journalMongoRepository
+      .aggregate([
+        { ...matchQuery },
+        {
+          $project: {
+            date: {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$createdAt',
+              },
+            },
+            emotions: 1,
+            category: 1,
+            description: 1,
+            type: 1,
+            createdBy: 1,
+            createdAt: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'createdBy',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: '$user' },
+        {
+          $project: {
+            'user.password': 0,
+            'user.activationKey': 0,
+            'user.otp': 0,
+            'user.otpSentAt': 0,
+            'user.isActive': 0,
+          },
+        },
+        { $addFields: { currentDate: '$$NOW' } },
+        {
+          $lookup: {
+            from: 'comments',
+            localField: '_id',
+            foreignField: 'postId',
+            pipeline: [
+              {
+                $match: {
+                  commentId: null,
+                },
+              },
+              {
+                $lookup: {
+                  from: 'comments',
+                  localField: '_id',
+                  foreignField: 'commentId',
+                  pipeline: [
+                    {
+                      $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        pipeline: [
+                          {
+                            $lookup: {
+                              from: 'journals',
+                              localField: '_id',
+                              foreignField: 'createdBy',
+                              pipeline: [
+                                { $sort: { createdAt: -1 } },
+                                {
+                                  $limit: 1,
+                                },
+                              ],
+                              as: 'last_journal',
+                            },
+                          },
+                          { $unwind: '$last_journal' },
+                        ],
+                        as: 'user',
+                      },
+                    },
+                    { $unwind: '$user' },
+                    {
+                      $project: {
+                        'user.password': 0,
+                        'user.activationKey': 0,
+                        'user.isActive': 0,
+                        'user.otpSentAt': 0,
+                        'user.otp': 0,
+                      },
+                    },
+                  ],
+                  as: 'replies',
+                },
+              },
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'userId',
+                  foreignField: '_id',
+                  pipeline: [
+                    {
+                      $lookup: {
+                        from: 'journals',
+                        localField: '_id',
+                        foreignField: 'createdBy',
+                        pipeline: [
+                          { $sort: { createdAt: -1 } },
+                          {
+                            $limit: 1,
+                          },
+                        ],
+                        as: 'last_journal',
+                      },
+                    },
+                    { $unwind: '$last_journal' },
+                  ],
+                  as: 'user',
+                },
+              },
+              { $unwind: '$user' },
+              {
+                $project: {
+                  'user.password': 0,
+                  'user.activationKey': 0,
+                  'user.otp': 0,
+                  'user.otpSentAt': 0,
+                  'user.isActive': 0,
+                },
+              },
+              { $sort: { createdAt: -1 } },
+            ],
+            as: 'comments',
+          },
+        },
+        {
+          $group: {
+            _id: '$date',
+            journals: {
+              $addToSet: {
+                emotions: '$emotions',
+                id: '$_id',
+                description: '$description',
+                type: '$type',
+                category: '$category',
+                createdBy: '$createdBy',
+                user: '$user',
+                comments: '$comments',
+                createdAt: '$createdAt',
+                currentDate: '$currentDate',
+              },
+            },
+          },
+        },
+        { $project: { _id: 0, journals: 1, date: '$_id' } },
+        { $sort: { date: -1 } },
+      ])
+      .toArray();
+  }
   async minePosts(user: any) {
     const matchQuery = {
       $match: {},

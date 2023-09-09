@@ -15,12 +15,14 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { ThemesService } from '../themes/themes.service';
 import * as bcrypt from 'bcrypt';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private themeService: ThemesService,
     private usersService: UsersService,
+    private authService: AuthService,
   ) {}
   @UseGuards(LocalAuthGuard)
   @Post('/login')
@@ -31,6 +33,14 @@ export class AuthController {
       );
     }
     return req.user;
+  }
+  @Post('google-login')
+  async googleLogin(@Body() body: { idToken: string }) {
+    return this.authService.validateGoogleUser(body.idToken);
+  }
+  @Post('apple-login')
+  async validateAppleUser(@Body() body: { idToken: string }) {
+    return this.authService.validateAppleUser(body.idToken);
   }
   @UseGuards(LocalAuthGuard)
   @Post('/professional-login')
@@ -62,7 +72,7 @@ export class AuthController {
     createUserDto.isProfessional = true;
     return this.usersService.create(createUserDto);
   }
-  //
+  
   @UseGuards(JwtAuthGuard)
   @Get('/profile')
   async getProfile(@Request() req) {

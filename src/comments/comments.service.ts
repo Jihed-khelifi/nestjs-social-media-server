@@ -5,8 +5,7 @@ import { CommentEntity } from './entities/comment.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ObjectId } from 'mongodb';
 import { NotificationsService } from '../notifications/notifications.service';
-import * as moment from 'moment';
-import { ReportService } from "../report/report.service";
+import { ReportService } from '../report/report.service';
 
 @Injectable()
 export class CommentsService {
@@ -46,8 +45,21 @@ export class CommentsService {
   }
   async editComment(commentId, userId, commentMessage) {
     return this.commentMongoRepository.update(
-      { id: new ObjectId(commentId) },
-      { comment: commentMessage },
+      {
+        id: new ObjectId(commentId),
+        userId: new ObjectId(userId),
+      },
+      { comment: commentMessage, isEdited: true },
+    );
+  }
+  async updateCommentWithPostId(commentId, userId, postId, commentMessage) {
+    return this.commentMongoRepository.update(
+      {
+        id: new ObjectId(commentId),
+        userId: new ObjectId(userId),
+        postId: new ObjectId(postId),
+      },
+      { comment: commentMessage, isEdited: true },
     );
   }
   async deleteComment(commentId) {
@@ -65,6 +77,9 @@ export class CommentsService {
         { status: 'removed' },
       );
       await this.reportService.markStatus(id, 'removed');
+      await this.notificationsService.createAdminRemovedCommentNotification(
+        comment.userId,
+      );
     } else {
       throw new HttpException('Not found', 404);
     }

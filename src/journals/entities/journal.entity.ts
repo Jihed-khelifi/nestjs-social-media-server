@@ -27,6 +27,15 @@ export class Journal {
   @Column()
   status: string;
 
+  @Column({ default: false })
+  isEdited: boolean;
+
+  @Column()
+  isTriggering: boolean;
+
+  @Column()
+  emotionCanBeLogged: boolean;
+
   @ObjectIdColumn({ name: 'createdBy' })
   createdBy: ObjectID;
 

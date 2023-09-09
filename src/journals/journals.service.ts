@@ -10,6 +10,14 @@ import { UsersService } from '../users/users.service';
 import { ReportService } from '../report/report.service';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 import { ConnectionsService } from 'src/connections/connections.service';
+import {
+  createCipheriv,
+  randomBytes,
+  createDecipheriv,
+  createHash,
+} from 'crypto';
+import * as process from 'process';
+import { EncryptionService } from "../utils/encryption.service";
 
 const monthNames = [
   'January',
@@ -36,14 +44,20 @@ export class JournalsService {
     @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
     private reportService: ReportService,
+    private encryptionService: EncryptionService,
     @Inject(forwardRef(() => ConnectionsService))
     private connectionsService: ConnectionsService,
   ) {}
 
-  create(createJournalDto: CreateJournalDto) {
+  create(createJournalDto: CreateJournalDto, user: User) {
+    // if (createJournalDto.type === 'private') {
+    //   createJournalDto.description = this.encryptionService.encryptData(
+    //     createJournalDto.description,
+    //     user.id.toString(),
+    //   );
+    // }
     return this.journalMongoRepository.save(createJournalDto);
   }
-
   update(updateJournalDto: UpdateJournalDto) {
     return this.journalMongoRepository.update(
       new ObjectId(updateJournalDto.id),

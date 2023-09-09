@@ -27,6 +27,7 @@ import { LinkedAccountUserEntity } from './users/entities/linked_account_user.en
 import { BlockedUsersEntity } from './users/entities/blocked_user.entity';
 import { ConnectionsModule } from './connections/connections.module';
 import { ConnectionEntity } from './connections/entities/connections.entity';
+import { EncryptionService } from './utils/encryption.service';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { ConnectionEntity } from './connections/entities/connections.entity';
     ConnectionsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EncryptionService],
+  exports: [EncryptionService],
 })
 export class AppModule {}

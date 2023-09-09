@@ -34,7 +34,7 @@ export class JournalsController {
   @Post()
   create(@Request() req, @Body() createJournalDto: CreateJournalDto) {
     createJournalDto.createdBy = new ObjectId(req.user.id);
-    return this.journalsService.create(createJournalDto);
+    return this.journalsService.create(createJournalDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)

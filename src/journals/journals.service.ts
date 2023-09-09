@@ -48,12 +48,12 @@ export class JournalsService {
   ) {}
 
   create(createJournalDto: CreateJournalDto, user: User) {
-    // if (createJournalDto.type === 'private') {
-    //   createJournalDto.description = this.encryptionService.encryptData(
-    //     createJournalDto.description,
-    //     user.id.toString(),
-    //   );
-    // }
+    if (createJournalDto.type === 'private') {
+      createJournalDto.description = this.encryptionService.encryptData(
+        createJournalDto.description,
+        user.id.toString(),
+      );
+    }
     return this.journalMongoRepository.save(createJournalDto);
   }
   update(updateJournalDto: UpdateJournalDto, user: User) {

@@ -1,6 +1,4 @@
-import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
-
-import { ConnectionEntity } from 'src/connections/entities/connections.entity';
+import { Entity, Column, ObjectIdColumn, ObjectID, Generated } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -51,6 +49,10 @@ export class User {
 
   @Column()
   activationKey: string;
+
+  @Column({ generated: 'uuid' })
+  @Generated('uuid')
+  uuid: string;
 
   @Column({ default: true })
   isActive: boolean;

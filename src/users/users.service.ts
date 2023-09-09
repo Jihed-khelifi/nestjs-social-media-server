@@ -25,6 +25,7 @@ import { LinkedAccountUserEntity } from './entities/linked_account_user.entity';
 import { CreateLinkAccountUserDto } from './dto/create-link-account-user.dto';
 import { BlockedUsersEntity } from './entities/blocked_user.entity';
 import { ConnectionsService } from 'src/connections/connections.service';
+import { v4 as uuidv4 } from 'uuid';
 
 dotEnv.config();
 
@@ -238,7 +239,7 @@ export class UsersService {
         $gte: new Date(moment().format('YYYY/MM/DD')),
         $lt: new Date(
           new Date(moment().format('YYYY/MM/DD')).getTime() +
-          60 * 60 * 24 * 1000,
+            60 * 60 * 24 * 1000,
         ),
       },
     });

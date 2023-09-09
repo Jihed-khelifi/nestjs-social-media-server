@@ -29,6 +29,7 @@ import { ConnectionsModule } from './connections/connections.module';
 import { ConnectionEntity } from './connections/entities/connections.entity';
 import { EncryptionService } from './utils/encryption.service';
 import { ConfigEntity } from './config.entity';
+import { ReflectModule } from './reflect/reflect.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { ConfigEntity } from './config.entity';
     ReportModule,
     ScheduleModule.forRoot(),
     ConnectionsModule,
+    ReflectModule,
   ],
   controllers: [AppController],
   providers: [AppService, EncryptionService],

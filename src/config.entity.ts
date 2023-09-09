@@ -7,4 +7,7 @@ export class ConfigEntity {
 
   @Column()
   googleClientKey: string;
+
+  @Column()
+  openAPIKey: string;
 }

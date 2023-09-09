@@ -34,7 +34,6 @@ export class AuthService {
   async validateGoogleUser(idToken: string): Promise<any> {
     try {
       const configEntity = await this.configEntityMongoRepository.findOne({});
-      console.log(configEntity.googleClientKey);
       const client = new OAuth2Client(configEntity.googleClientKey);
       const ticket = await client.verifyIdToken({
         idToken,

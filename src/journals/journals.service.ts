@@ -58,7 +58,7 @@ export class JournalsService {
   update(updateJournalDto: UpdateJournalDto) {
     return this.journalMongoRepository.update(
       new ObjectId(updateJournalDto.id),
-      { ...updateJournalDto },
+      { ...updateJournalDto, isEdited: true },
     );
   }
 

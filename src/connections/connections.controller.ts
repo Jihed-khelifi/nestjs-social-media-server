@@ -49,7 +49,7 @@ export class ConnectionsController {
   }
   @UseGuards(JwtAuthGuard)
   @Post('removeSupporter/:supporterUser')
-  removeSupporter(@Request() req, @Param('userToUnfollow') userToUnfollow) {
-    return this.connectionsService.removeSupporter(req.user, userToUnfollow);
+  removeSupporter(@Request() req, @Param('supporterUser') supporterUser) {
+    return this.connectionsService.removeSupporter(req.user, supporterUser);
   }
 }

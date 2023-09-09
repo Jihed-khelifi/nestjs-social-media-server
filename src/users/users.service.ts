@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { MongoRepository } from 'typeorm';
+import { MongoRepository, ObjectID } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as dotEnv from 'dotenv';
@@ -119,8 +119,10 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  async findOne(id: ObjectId): Promise<User> {
-    return this.usersRepository.findOneById(id);
+  async findOne(id: ObjectID): Promise<User> {
+    return this.usersRepository.findOneBy({
+      _id: new ObjectId(id),
+    });
   }
 
   async getUserByProfessionalCode(code: string): Promise<User> {

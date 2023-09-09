@@ -51,7 +51,7 @@ export class JournalsService {
     if (createJournalDto.type === 'private') {
       createJournalDto.description = this.encryptionService.encryptData(
         createJournalDto.description,
-        user.id.toString(),
+        user.uuid,
       );
     }
     return this.journalMongoRepository.save(createJournalDto);

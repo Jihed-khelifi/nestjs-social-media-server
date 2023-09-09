@@ -29,6 +29,7 @@ export class CommentsController {
     }
     return this.commentsService.createComment(createCommentDto, req.user.id);
   }
+
   @UseGuards(JwtAuthGuard)
   @Get(':postId')
   getPostComments(@Request() req, @Param('postId') postId: string) {

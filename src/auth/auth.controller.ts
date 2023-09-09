@@ -62,7 +62,7 @@ export class AuthController {
     createUserDto.isProfessional = true;
     return this.usersService.create(createUserDto);
   }
-  //
+  
   @UseGuards(JwtAuthGuard)
   @Get('/profile')
   async getProfile(@Request() req) {

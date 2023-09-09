@@ -65,6 +65,7 @@ export class CommentsService {
         { status: 'removed' },
       );
       await this.reportService.markStatus(id, 'removed');
+      await this.notificationsService.createAdminRemovedCommentNotification(comment.userId)
     } else {
       throw new HttpException('Not found', 404);
     }

@@ -1,7 +1,7 @@
 import { HttpException, Injectable, Inject, forwardRef } from '@nestjs/common';
 import { CreateJournalDto } from './dto/create-journal.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MongoRepository, Not } from 'typeorm';
+import { MongoRepository } from 'typeorm';
 import { Journal } from './entities/journal.entity';
 import { User } from '../users/entities/user.entity';
 import { ObjectId } from 'mongodb';
@@ -10,14 +10,8 @@ import { UsersService } from '../users/users.service';
 import { ReportService } from '../report/report.service';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 import { ConnectionsService } from 'src/connections/connections.service';
-import {
-  createCipheriv,
-  randomBytes,
-  createDecipheriv,
-  createHash,
-} from 'crypto';
-import * as process from 'process';
-import { EncryptionService } from "../utils/encryption.service";
+import { EncryptionService } from '../utils/encryption.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 const monthNames = [
   'January',
@@ -47,6 +41,9 @@ export class JournalsService {
     private encryptionService: EncryptionService,
     @Inject(forwardRef(() => ConnectionsService))
     private connectionsService: ConnectionsService,
+
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationService: NotificationsService,
   ) {}
 
   create(createJournalDto: CreateJournalDto, user: User) {
@@ -109,6 +106,9 @@ export class JournalsService {
         { status: 'removed' },
       );
       await this.reportService.markStatus(id, 'removed');
+      await this.notificationService.createAdminRemovedPostNotification(
+        journal.createdBy,
+      );
     } else {
       throw new HttpException('Not found', 404);
     }

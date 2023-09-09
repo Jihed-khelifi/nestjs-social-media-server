@@ -8,6 +8,7 @@ import { ReportModule } from '../report/report.module';
 import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 import { ConnectionsModule } from 'src/connections/connections.module';
 import { EncryptionService } from '../utils/encryption.service';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { EncryptionService } from '../utils/encryption.service';
     forwardRef(() => UsersModule),
     ReportModule,
     forwardRef(() => ConnectionsModule),
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [JournalsController],
   providers: [JournalsService, EncryptionService],

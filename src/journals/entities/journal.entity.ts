@@ -36,6 +36,9 @@ export class Journal {
   @Column()
   emotionCanBeLogged: boolean;
 
+  @Column()
+  isEncrypted: boolean;
+
   @ObjectIdColumn({ name: 'createdBy' })
   createdBy: ObjectID;
 

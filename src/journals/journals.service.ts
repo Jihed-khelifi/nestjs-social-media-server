@@ -53,6 +53,7 @@ export class JournalsService {
         createJournalDto.description,
         user.uuid,
       );
+      createJournalDto.isEncrypted = true;
     }
     return this.journalMongoRepository.save(createJournalDto);
   }

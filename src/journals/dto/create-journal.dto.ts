@@ -9,4 +9,5 @@ export class CreateJournalDto {
   createdBy?: string;
   isTriggering?: boolean;
   emotionCanBeLogged?: boolean;
+  isEncrypted?: boolean;
 }

@@ -922,6 +922,32 @@ export class JournalsService {
     }
     return finalData;
   }
+  async getMonthMarked(user: any, matchCondition) {
+    const finalData = [];
+    const insightData = await this.insightAggregation(user, matchCondition);
+    for (const dateData of insightData) {
+      let dateEmotions = dateData.data
+        .filter((d) => d.emotion)
+        .map((d) => d.emotion);
+      dateEmotions = Array.from(new Set(dateEmotions)).sort((a, b) => {
+        if (a === b) return 0;
+        switch (a) {
+          case 'positive':
+            return -1;
+          case 'neutral':
+            if (b === 'neutral') return 1;
+            else return -1;
+          case 'negative':
+            if (b === 'negative') return 1;
+            else return -1;
+          default:
+            return 1;
+        }
+      });
+      finalData.push({ emotions: dateEmotions, date: dateData.date });
+    }
+    return finalData;
+  }
 
   async getInsightsData(user: any, startDate: string, endDate: string) {
     const endD = new Date(endDate);
@@ -1082,6 +1108,7 @@ export class JournalsService {
         {
           $project: {
             month: { $month: '$createdAt' },
+            year: { $year: '$createdAt' },
             date: {
               $dateToString: {
                 format: '%Y-%m-%d',
@@ -1172,7 +1199,7 @@ export class JournalsService {
             data: 1,
           },
         },
-        { $unset: ['data.date', 'data._id', 'data.month'] },
+        { $unset: ['data.date', 'data._id', 'data.month', 'data.year'] },
       ])
       .toArray();
   }

@@ -166,6 +166,18 @@ export class JournalsController {
   ) {
     return this.journalsService.getInsightsData(req.user, startDate, endDate);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('getMonthMarked/:month/:year')
+  async getMonthMarked(
+    @Param('month') month: number,
+    @Param('year') year: number,
+    @Request() req,
+  ) {
+    return this.journalsService.getMonthMarked(req.user, {
+      month: +month,
+      year: +year,
+    });
+  }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

@@ -578,9 +578,10 @@ export class ConnectionsService {
       });
     for (const followingUser of newUserToUnfollowConnectionDoc.connections) {
       if (followingUser.userId.toString() === user.id.toString()) {
+        await this.removeConnection(user, userToUnfollowId);
+        console.log("djijdk")
         break;
       }
-      this.removeConnection(user, userToUnfollowId);
     }
 
     return {
@@ -689,6 +690,7 @@ export class ConnectionsService {
     const userConnection = await this.connectionMongoRepository.findOneBy({
       userId: new ObjectId(user.id),
     });
+    console.log(user.id)
     const followersIds: ObjectID[] = [];
     for (const follower of userConnection.followers) {
       followersIds.push(new ObjectId(follower.userId));

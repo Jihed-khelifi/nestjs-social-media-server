@@ -11,11 +11,11 @@ export class PaymentEntity {
     @ObjectIdColumn()
     id: ObjectID;
 
-    @Column()
+    @CreateDateColumn()
     date: Date
 
     @Column()
-    amountPayed: number
+    amountPayed: string
 
     @Column()
     status: string

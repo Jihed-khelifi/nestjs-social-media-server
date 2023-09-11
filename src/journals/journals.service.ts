@@ -42,7 +42,6 @@ export class JournalsService {
     private encryptionService: EncryptionService,
     @Inject(forwardRef(() => ConnectionsService))
     private connectionsService: ConnectionsService,
-
     @Inject(forwardRef(() => NotificationsService))
     private notificationService: NotificationsService,
   ) { }

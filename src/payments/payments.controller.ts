@@ -2,7 +2,7 @@ import {
     Controller,
     Get,
     Param,
-    Put,
+    Post,
     Request,
     Body,
     UseGuards,
@@ -19,12 +19,10 @@ export class PaymentsController {
     ) { }
 
     @UseGuards(JwtAuthGuard)
-    @Get('addPayment')
+    @Post('addPayment')
     async addPayment(@Request() req, @Body() createPaymentDto: CreatePaymentDto) {
         return this.paymentsService.addPayment(req.user, createPaymentDto);
     }
-
-
 
     @UseGuards(JwtAuthGuard)
     @Get('getUserPayments')

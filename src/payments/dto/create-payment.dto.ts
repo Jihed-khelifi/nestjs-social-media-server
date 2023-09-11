@@ -2,19 +2,13 @@ import { IsString, IsEmail, IsNumber } from "class-validator";
 
 export class CreatePaymentDto {
     @IsString()
-    date: Date
-
-    @IsNumber()
-    amountPayed: number
+    amountPayed: string
 
     @IsString()
     status: string
 
     @IsString()
     paymentMethod: string
-
-    @IsString()
-    payerId: string
 
     @IsString()
     payerName: string

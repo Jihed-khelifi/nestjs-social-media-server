@@ -15,12 +15,15 @@ export class PaymentsService {
     ) { }
 
     async addPayment(user: User, createPaymentDto: CreatePaymentDto) {
-        this.paymentsMongoRepo.save(createPaymentDto)
+        this.paymentsMongoRepo.save({
+            ...createPaymentDto
+            , payerId: new ObjectId(user.id)
+        })
     }
 
     async getUserPayments(user: any) {
-        return this.paymentsMongoRepo.findOneBy({
-            user: new ObjectId(user.id)
+        return this.paymentsMongoRepo.findBy({
+            payerId: new ObjectId(user.id)
         })
     }
     async changePaymentStatus(user: User, paymenyId: string, status: string) {

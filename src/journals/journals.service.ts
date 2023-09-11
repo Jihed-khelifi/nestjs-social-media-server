@@ -650,7 +650,6 @@ export class JournalsService {
       };
     } else if (type === 'followers') {
       const followersIds = await this.connectionsService.getFollowersIds(user);
-      console.log(followersIds)
       matchQuery.$match = {
         type: 'public',
         createdBy: {
@@ -671,7 +670,6 @@ export class JournalsService {
       const connectionsIds = await this.connectionsService.getConnectionsIds(
         user,
       );
-      console.log(connectionsIds)
       matchQuery.$match = {
         type: 'public',
         createdBy: {

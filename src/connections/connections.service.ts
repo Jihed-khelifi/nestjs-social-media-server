@@ -579,7 +579,6 @@ export class ConnectionsService {
     for (const followingUser of newUserToUnfollowConnectionDoc.connections) {
       if (followingUser.userId.toString() === user.id.toString()) {
         await this.removeConnection(user, userToUnfollowId);
-        console.log("djijdk")
         break;
       }
     }

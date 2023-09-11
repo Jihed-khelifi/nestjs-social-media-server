@@ -30,6 +30,8 @@ import { ConnectionEntity } from './connections/entities/connections.entity';
 import { EncryptionService } from './utils/encryption.service';
 import { ConfigEntity } from './config.entity';
 import { ReflectModule } from './reflect/reflect.module';
+import { PaymentsModule } from './payments/payments.module';
+import { PaymentEntity } from './payments/entities/payment.entity';
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { ReflectModule } from './reflect/reflect.module';
         BlockedUsersEntity,
         ConnectionEntity,
         ConfigEntity,
+        PaymentEntity
       ],
       ssl: false,
       useUnifiedTopology: true,
@@ -71,9 +74,10 @@ import { ReflectModule } from './reflect/reflect.module';
     ScheduleModule.forRoot(),
     ConnectionsModule,
     ReflectModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, EncryptionService],
   exports: [EncryptionService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -10,14 +10,13 @@ export class ReflectService {
     @InjectRepository(ConfigEntity)
     private configEntityMongoRepository: MongoRepository<ConfigEntity>,
   ) {}
-  async fetchFromOpenAI(userInput: string): Promise<any> {
+  async fetchFromOpenAI(userInput: string, systemInput: string): Promise<any> {
     const configEntity = await this.configEntityMongoRepository.findOne({});
     const apiKey = configEntity.openAPIKey;
     const messages = [
       {
         role: 'system',
-        content:
-          "You are reflect AI. You provide personalized reflection questions based on input user gives you about what he is thinking about. Only give out the questions. Don't talk to the user. Don't be verbose. Put the questions in a list format. Between 4- 7. Always give reflection questions in the input language.",
+        content: systemInput,
       },
       {
         role: 'user',

@@ -38,9 +38,4 @@ export class PaymentsController {
         return this.paymentsService.changePaymentStatus(req.user, paymentId, status);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Put(':id')
-    readPayment(@Request() req, @Param('id') id: string) {
-        return this.paymentsService.readPayment(id, req.user.id);
-    }
 }

@@ -29,7 +29,7 @@ export class JournalsController {
   constructor(
     private readonly journalsService: JournalsService,
     private userService: UsersService,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -193,7 +193,7 @@ export class JournalsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('getConnectionsPosts/:type')
-  async getConnectionsPosts(@Request() req, @Param('type') type: string) {
-    return this.journalsService.getConnectionsPosts(req.user, type);
+  async getConnectionsPosts(@Request() req, @Param('type') type: string, @Query('page') page = 0,) {
+    return this.journalsService.getCommunityPosts(req.user, type, page);
   }
 }

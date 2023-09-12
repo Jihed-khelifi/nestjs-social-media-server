@@ -29,6 +29,9 @@ export class CreateUserDto {
   @IsString()
   city: string;
 
+  @IsString()
+  loggedInWith: string
+
 
   isProfessional?: boolean;
 

@@ -63,6 +63,11 @@ export class ConnectionsService {
             },
           },
           {
+            $unwind: {
+              path: '$followers',
+            },
+          },
+          {
             $lookup: {
               from: 'users',
               localField: 'followers.userId',
@@ -70,11 +75,7 @@ export class ConnectionsService {
               as: 'follower',
             },
           },
-          {
-            $unwind: {
-              path: '$followers',
-            },
-          },
+          
           {
             $unwind: {
               path: '$follower',
@@ -123,6 +124,11 @@ export class ConnectionsService {
           },
         },
         {
+          $unwind: {
+            path: '$followers',
+          },
+        },
+        {
           $lookup: {
             from: 'users',
             localField: 'followers.userId',
@@ -130,11 +136,7 @@ export class ConnectionsService {
             as: 'follower',
           },
         },
-        {
-          $unwind: {
-            path: '$followers',
-          },
-        },
+        
         {
           $unwind: {
             path: '$follower',
@@ -207,6 +209,11 @@ export class ConnectionsService {
             },
           },
           {
+            $unwind: {
+              path: '$following',
+            },
+          },
+          {
             $lookup: {
               from: 'users',
               localField: 'following.userId',
@@ -214,11 +221,7 @@ export class ConnectionsService {
               as: 'followingUser',
             },
           },
-          {
-            $unwind: {
-              path: '$following',
-            },
-          },
+         
           {
             $unwind: {
               path: '$followingUser',
@@ -268,16 +271,16 @@ export class ConnectionsService {
           },
         },
         {
+          $unwind: {
+            path: '$following',
+          },
+        },
+        {
           $lookup: {
             from: 'users',
             localField: 'following.userId',
             foreignField: '_id',
             as: 'followingUser',
-          },
-        },
-        {
-          $unwind: {
-            path: '$following',
           },
         },
         {
@@ -360,6 +363,11 @@ export class ConnectionsService {
             },
           },
           {
+            $unwind: {
+              path: '$connections',
+            },
+          },
+          {
             $lookup: {
               from: 'users',
               localField: 'connections.userId',
@@ -367,11 +375,7 @@ export class ConnectionsService {
               as: 'connectionUser',
             },
           },
-          {
-            $unwind: {
-              path: '$connections',
-            },
-          },
+          
           {
             $unwind: {
               path: '$connectionUser',
@@ -426,7 +430,11 @@ export class ConnectionsService {
             as: 'connectionUser',
           },
         },
-
+        {
+          $unwind: {
+            path: '$connectionUser',
+          },
+        },
         {
           $project: {
             _id: 1,
@@ -570,9 +578,9 @@ export class ConnectionsService {
       });
     for (const followingUser of newUserToUnfollowConnectionDoc.connections) {
       if (followingUser.userId.toString() === user.id.toString()) {
+        await this.removeConnection(user, userToUnfollowId);
         break;
       }
-      this.removeConnection(user, userToUnfollowId);
     }
 
     return {
@@ -681,6 +689,7 @@ export class ConnectionsService {
     const userConnection = await this.connectionMongoRepository.findOneBy({
       userId: new ObjectId(user.id),
     });
+    console.log(user.id)
     const followersIds: ObjectID[] = [];
     for (const follower of userConnection.followers) {
       followersIds.push(new ObjectId(follower.userId));

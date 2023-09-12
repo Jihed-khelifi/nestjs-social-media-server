@@ -225,7 +225,7 @@ export class NotificationsService {
     return this.notificationEntityMongoRepository.findBy({
       userId: new ObjectId(user.id),
     })
-  }  
+  }
 
   public async createCommentOnPostNotification(
     postId,
@@ -302,7 +302,7 @@ export class NotificationsService {
   async createNewConnectionNotification(userId, userConnectionId) {
     const user = await this.usersService.findOne(userId);
     const notification: any = {};
-    notification.notificationMessage = `${user.username} is not connected to you`;
+    notification.notificationMessage = `${user.username} is connected to you`;
     notification.userId = userId;
     notification.relatedUserId = userConnectionId;
     notification.createdAt = new Date();

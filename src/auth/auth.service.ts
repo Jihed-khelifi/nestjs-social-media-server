@@ -19,7 +19,7 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(ConfigEntity)
     private configEntityMongoRepository: MongoRepository<ConfigEntity>,
-  ) {}
+  ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
@@ -58,6 +58,7 @@ export class AuthService {
           state: '',
           city: '',
           professionalCode: '',
+          loggedInWith: "google"
         });
       }
       const payload = { email: user.email, sub: user.id };
@@ -109,6 +110,7 @@ export class AuthService {
           state: '',
           city: '',
           professionalCode: '',
+          loggedInWith: "apple"
         });
       }
       const payload = { email: user.email, sub: user.id };

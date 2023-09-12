@@ -42,10 +42,9 @@ export class JournalsService {
     private encryptionService: EncryptionService,
     @Inject(forwardRef(() => ConnectionsService))
     private connectionsService: ConnectionsService,
-
     @Inject(forwardRef(() => NotificationsService))
     private notificationService: NotificationsService,
-  ) {}
+  ) { }
 
   create(createJournalDto: CreateJournalDto, user: User) {
     if (createJournalDto.type === 'private') {
@@ -663,7 +662,7 @@ export class JournalsService {
       matchQuery.$match = {
         type: 'public',
         createdBy: {
-          $in: followingIds,
+          $in: followingIds.map((id) => new ObjectId(id)),
         },
         status: { $nin: ['deleted', 'removed'] },
       };
@@ -674,7 +673,7 @@ export class JournalsService {
       matchQuery.$match = {
         type: 'public',
         createdBy: {
-          $in: connectionsIds,
+          $in: connectionsIds.map((id) => new ObjectId(id)),
         },
         status: { $nin: ['deleted', 'removed'] },
       };
@@ -696,37 +695,18 @@ export class JournalsService {
           blockedUsers.push(u.blockedTo);
         }
       }
-      const removeBlockedDataQuery = {
-        createdBy: { $nin: blockedUsers },
-      };
-      matchQuery.$match = {
-        ...matchQuery.$match,
-        ...removeBlockedDataQuery,
-      };
     }
     const bannedUsers = await this.userService.getBannedUsers();
-    if (bannedUsers.length) {
-      const removeBannedDataQuery = {
-        createdBy: { $nin: bannedUsers.map((u) => u.id) },
-      };
-      if (
-        matchQuery.$match['createdBy'] &&
-        matchQuery.$match['createdBy']['$nin']
-      ) {
-        matchQuery.$match['createdBy']['$nin'] = [
-          ...matchQuery.$match['createdBy']['$nin'],
-          ...bannedUsers.map((u) => u.id),
-        ];
-      } else {
-        matchQuery.$match = {
-          ...matchQuery.$match,
-          ...removeBannedDataQuery,
-        };
-      }
-    }
     return this.journalMongoRepository
       .aggregate([
         { ...matchQuery },
+        {
+          $match: {
+            createdBy: {
+              $nin: [blockedUsers.map((id) => new ObjectId(id)), ...bannedUsers.map((u) => new ObjectId(u.id))],
+            }
+          }
+        },
         {
           $project: {
             emotions: 1,
@@ -1359,6 +1339,7 @@ export class JournalsService {
     if (type === 'followers') {
       const followersIds = await this.connectionsService.getFollowersIds(user);
       const posts = await this.journalMongoRepository.findBy({
+        type: "public",
         createdBy: { $in: followersIds },
       });
       return posts;
@@ -1367,6 +1348,7 @@ export class JournalsService {
     if (type === 'following') {
       const followingIds = await this.connectionsService.getFollowingsIds(user);
       const posts = await this.journalMongoRepository.findBy({
+        type: "public",
         createdBy: { $in: followingIds },
       });
       return posts;
@@ -1377,6 +1359,7 @@ export class JournalsService {
         user,
       );
       const posts = await this.journalMongoRepository.findBy({
+        type: "public",
         createdBy: { $in: connectionsIds },
       });
       return posts;

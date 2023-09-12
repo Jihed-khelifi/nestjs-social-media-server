@@ -88,4 +88,7 @@ export class User {
 
   @ObjectIdColumn({ name: 'connection' })
   connection: ObjectID;
+
+  @Column()
+  logggedInWith: string
 }

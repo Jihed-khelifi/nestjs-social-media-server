@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common/decorators/core/injectable.decorator";
+import { Injectable } from '@nestjs/common/decorators/core/injectable.decorator';
 import { Inject } from '@nestjs/common/decorators/core/inject.decorator';
 import { forwardRef } from '@nestjs/common/utils';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,7 +8,7 @@ import * as OneSignal from '@onesignal/node-onesignal';
 import { JournalsService } from '../journals/journals.service';
 import { UsersService } from '../users/users.service';
 import { ObjectId } from 'mongodb';
-import { User } from "src/users/entities/user.entity";
+import { User } from 'src/users/entities/user.entity';
 
 const ONESIGNAL_APP_ID = '92a64123-4fb9-4c5b-90eb-b789794f168d';
 const app_key_provider = {
@@ -220,12 +220,44 @@ export class NotificationsService {
       ])
       .toArray();
   }
-
   public async getUserNotifications(user: User) {
-    return this.notificationEntityMongoRepository.findBy({
-      userId: new ObjectId(user.id),
-    })
-  }  
+    return this.notificationEntityMongoRepository
+      .aggregate([
+        {
+          $match: {
+            userId: user.id,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'relatedUserId',
+            foreignField: '_id',
+            as: 'relatedUser',
+          },
+        },
+        { $unwind: '$relatedUser' },
+        {
+          $addFields: {
+            username: '$relatedUser.username',
+            avatar: '$relatedUser.avatar',
+          },
+        },
+        {
+          $project: {
+            relatedUser: 0,
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ])
+      .toArray();
+  }
+
+  // public async getUserNotifications(user: User) {
+  //   return this.notificationEntityMongoRepository.findBy({
+  //     userId: new ObjectId(user.id),
+  //   });
+  // }
 
   public async createCommentOnPostNotification(
     postId,

@@ -52,14 +52,25 @@ export class CommentsService {
       { comment: commentMessage, isEdited: true },
     );
   }
-  async updateCommentWithPostId(commentId, userId, postId, commentMessage) {
+  async updateCommentWithPostId(
+    commentId,
+    userId,
+    postId,
+    commentDto: CreateCommentDto,
+  ) {
+    const data: any = {
+      comment: commentDto.comment,
+      mentions: commentDto.mentions
+        ? commentDto.mentions.map((id) => new ObjectId(id))
+        : [],
+    };
     return this.commentMongoRepository.update(
       {
         id: new ObjectId(commentId),
         userId: new ObjectId(userId),
         postId: new ObjectId(postId),
       },
-      { comment: commentMessage, isEdited: true },
+      { ...data, isEdited: true },
     );
   }
   async deleteComment(commentId) {

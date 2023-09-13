@@ -25,7 +25,7 @@ export class CommentsController {
         createCommentDto._id,
         req.user.id,
         createCommentDto.postId,
-        createCommentDto.comment,
+        createCommentDto,
       );
     }
     return this.commentsService.createComment(createCommentDto, req.user.id);
@@ -55,13 +55,13 @@ export class CommentsController {
     @Request() req,
     @Param('postId') postId: string,
     @Param('commentId') commentId: string,
-    @Body() body: { message },
+    @Body() createCommentDto: CreateCommentDto,
   ) {
     return this.commentsService.updateCommentWithPostId(
       commentId,
       req.user.id,
       postId,
-      body.message,
+      createCommentDto,
     );
   }
   @UseGuards(JwtAuthGuard)

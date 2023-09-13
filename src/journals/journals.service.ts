@@ -306,6 +306,7 @@ export class JournalsService {
             category: 1,
             description: 1,
             type: 1,
+            status: 1,
             createdBy: 1,
             createdAt: 1,
           },

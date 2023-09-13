@@ -876,6 +876,8 @@ export class JournalsService {
             emotions: 1,
             description: 1,
             comments: 1,
+            isTriggering: 1,
+            createdAt: 1,
           },
         },
         { $sort: { createdAt: -1 } },

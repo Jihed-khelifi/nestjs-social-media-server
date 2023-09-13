@@ -44,7 +44,7 @@ export class JournalsService {
     private connectionsService: ConnectionsService,
     @Inject(forwardRef(() => NotificationsService))
     private notificationService: NotificationsService,
-  ) { }
+  ) {}
 
   create(createJournalDto: CreateJournalDto, user: User) {
     if (createJournalDto.type === 'private') {
@@ -437,6 +437,7 @@ export class JournalsService {
                 type: '$type',
                 category: '$category',
                 createdBy: '$createdBy',
+                status: '$status',
                 user: '$user',
                 comments: '$comments',
                 createdAt: '$createdAt',
@@ -704,9 +705,12 @@ export class JournalsService {
         {
           $match: {
             createdBy: {
-              $nin: [blockedUsers.map((id) => new ObjectId(id)), ...bannedUsers.map((u) => new ObjectId(u.id))],
-            }
-          }
+              $nin: [
+                blockedUsers.map((id) => new ObjectId(id)),
+                ...bannedUsers.map((u) => new ObjectId(u.id)),
+              ],
+            },
+          },
         },
         {
           $project: {
@@ -809,6 +813,17 @@ export class JournalsService {
                         'user.city': 0,
                       },
                     },
+                    {
+                      $project: {
+                        username: '$user.username',
+                        avatar: '$user.avatar',
+                        postId: 1,
+                        commentId: 1,
+                        replies: 1,
+                        comment: 1,
+                        mentions: 1,
+                      },
+                    },
                   ],
                   as: 'replies',
                 },
@@ -841,16 +856,26 @@ export class JournalsService {
               { $unwind: '$user' },
               {
                 $project: {
-                  'user.password': 0,
-                  'user.activationKey': 0,
-                  'user.otp': 0,
-                  'user.otpSentAt': 0,
-                  'user.isActive': 0,
+                  username: '$user.username',
+                  avatar: '$user.avatar',
+                  postId: 1,
+                  replies: 1,
+                  comment: 1,
+                  mentions: 1,
                 },
               },
               { $sort: { createdAt: -1 } },
             ],
             as: 'comments',
+          },
+        },
+        {
+          $project: {
+            username: '$user.username',
+            avatar: '$user.avatar',
+            emotions: 1,
+            description: 1,
+            comments: 1,
           },
         },
         { $sort: { createdAt: -1 } },
@@ -1340,7 +1365,7 @@ export class JournalsService {
     if (type === 'followers') {
       const followersIds = await this.connectionsService.getFollowersIds(user);
       const posts = await this.journalMongoRepository.findBy({
-        type: "public",
+        type: 'public',
         createdBy: { $in: followersIds },
       });
       return posts;
@@ -1349,7 +1374,7 @@ export class JournalsService {
     if (type === 'following') {
       const followingIds = await this.connectionsService.getFollowingsIds(user);
       const posts = await this.journalMongoRepository.findBy({
-        type: "public",
+        type: 'public',
         createdBy: { $in: followingIds },
       });
       return posts;
@@ -1360,7 +1385,7 @@ export class JournalsService {
         user,
       );
       const posts = await this.journalMongoRepository.findBy({
-        type: "public",
+        type: 'public',
         createdBy: { $in: connectionsIds },
       });
       return posts;

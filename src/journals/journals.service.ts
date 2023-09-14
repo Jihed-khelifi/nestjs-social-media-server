@@ -892,6 +892,7 @@ export class JournalsService {
       $match: {},
     };
     matchQuery.$match = {
+      createdBy: new ObjectId(userId),
       type: 'public',
       status: { $nin: ['deleted', 'removed'] },
     };

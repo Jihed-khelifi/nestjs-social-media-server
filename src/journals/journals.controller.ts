@@ -203,7 +203,6 @@ export class JournalsController {
   @UseGuards(JwtAuthGuard)
   @Get('getUserPublicPosts/:userId')
   async getUserPublicPosts(
-    @Request() req,
     @Param('userId') userId: string,
     @Query('page') page = 0,
   ) {

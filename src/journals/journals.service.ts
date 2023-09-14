@@ -284,16 +284,9 @@ export class JournalsService {
       .toArray();
   }
 
-  async getDeletedPosts() {
-    const matchQuery = {
-      $match: {},
-    };
-    matchQuery.$match = {
-      status: { $in: ['deleted', 'removed'] },
-    };
+  async getPostsForAdmin() {
     return this.journalMongoRepository
       .aggregate([
-        { ...matchQuery },
         {
           $project: {
             date: {
@@ -892,6 +885,227 @@ export class JournalsService {
         },
       ])
       .toArray();
+  }
+  async getUserPublicPosts(userId: string, page: number) {
+    const user = await this.userService.findOne(new ObjectId(userId));
+    const matchQuery = {
+      $match: {},
+    };
+    matchQuery.$match = {
+      type: 'public',
+      status: { $nin: ['deleted', 'removed'] },
+    };
+    const blockedUsers = [];
+    const blocked = await this.blockedUsersEntityMongoRepository.findBy({
+      $or: [{ blockedBy: user.id }, { blockedTo: user.id }],
+    });
+    for (const u of blocked) {
+      if (u.blockedBy.toString() !== user.id.toString()) {
+        blockedUsers.push(u.blockedBy);
+      } else {
+        blockedUsers.push(u.blockedTo);
+      }
+    }
+    const bannedUsers = await this.userService.getBannedUsers();
+    const posts = await this.journalMongoRepository
+      .aggregate([
+        { ...matchQuery },
+        {
+          $match: {
+            createdBy: {
+              $nin: [
+                blockedUsers.map((id) => new ObjectId(id)),
+                ...bannedUsers.map((u) => new ObjectId(u.id)),
+              ],
+            },
+          },
+        },
+        {
+          $project: {
+            emotions: 1,
+            category: 1,
+            description: 1,
+            type: 1,
+            createdBy: 1,
+            createdAt: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'createdBy',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: '$user' },
+        {
+          $project: {
+            'user.password': 0,
+            'user.activationKey': 0,
+            'user.otp': 0,
+            'user.otpSentAt': 0,
+            'user.location': 0,
+            'user.isActive': 0,
+            'user.country': 0,
+            'user.state': 0,
+            'user.city': 0,
+          },
+        },
+        {
+          $lookup: {
+            from: 'comments',
+            localField: '_id',
+            foreignField: 'postId',
+            pipeline: [
+              {
+                $match: {
+                  commentId: null,
+                  userId: {
+                    $nin: [...blockedUsers, ...bannedUsers.map((u) => u.id)],
+                  },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'comments',
+                  localField: '_id',
+                  foreignField: 'commentId',
+                  pipeline: [
+                    {
+                      $match: {
+                        userId: {
+                          $nin: [
+                            ...blockedUsers,
+                            ...bannedUsers.map((u) => u.id),
+                          ],
+                        },
+                      },
+                    },
+                    {
+                      $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        pipeline: [
+                          {
+                            $lookup: {
+                              from: 'journals',
+                              localField: '_id',
+                              foreignField: 'createdBy',
+                              pipeline: [
+                                { $sort: { createdAt: -1 } },
+                                {
+                                  $limit: 1,
+                                },
+                              ],
+                              as: 'last_journal',
+                            },
+                          },
+                          { $unwind: '$last_journal' },
+                        ],
+                        as: 'user',
+                      },
+                    },
+                    { $unwind: '$user' },
+                    {
+                      $project: {
+                        'user.password': 0,
+                        'user.activationKey': 0,
+                        'user.otp': 0,
+                        'user.otpSentAt': 0,
+                        'user.location': 0,
+                        'user.isActive': 0,
+                        'user.country': 0,
+                        'user.state': 0,
+                        'user.city': 0,
+                      },
+                    },
+                    {
+                      $project: {
+                        username: '$user.username',
+                        avatar: '$user.avatar',
+                        postId: 1,
+                        commentId: 1,
+                        replies: 1,
+                        comment: 1,
+                        mentions: 1,
+                      },
+                    },
+                  ],
+                  as: 'replies',
+                },
+              },
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'userId',
+                  foreignField: '_id',
+                  pipeline: [
+                    {
+                      $lookup: {
+                        from: 'journals',
+                        localField: '_id',
+                        foreignField: 'createdBy',
+                        pipeline: [
+                          { $sort: { createdAt: -1 } },
+                          {
+                            $limit: 1,
+                          },
+                        ],
+                        as: 'last_journal',
+                      },
+                    },
+                    { $unwind: '$last_journal' },
+                  ],
+                  as: 'user',
+                },
+              },
+              { $unwind: '$user' },
+              {
+                $project: {
+                  username: '$user.username',
+                  avatar: '$user.avatar',
+                  postId: 1,
+                  replies: 1,
+                  comment: 1,
+                  mentions: 1,
+                },
+              },
+              { $sort: { createdAt: -1 } },
+            ],
+            as: 'comments',
+          },
+        },
+        {
+          $project: {
+            username: '$user.username',
+            avatar: '$user.avatar',
+            emotions: 1,
+            description: 1,
+            comments: 1,
+            isTriggering: 1,
+            createdAt: 1,
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        {
+          $facet: {
+            pageDetails: [{ $count: 'total' }, { $addFields: { page: page } }],
+            journals: [{ $skip: page * 10 }, { $limit: 10 }],
+          },
+        },
+        {
+          $unwind: '$pageDetails',
+        },
+      ])
+      .toArray();
+    return {
+      username: user.username,
+      avatar: user.avatar,
+      id: user.id,
+      posts,
+    };
   }
 
   async getMinutesOfEmotions(user: any, matchCondition) {

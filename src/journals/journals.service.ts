@@ -287,6 +287,11 @@ export class JournalsService {
     return this.journalMongoRepository
       .aggregate([
         {
+          $match: {
+            type: 'public',
+          },
+        },
+        {
           $project: {
             date: {
               $dateToString: {

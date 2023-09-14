@@ -454,4 +454,84 @@ export class UsersService {
 
     return { ...userProfile[0] };
   }
+  async getUserProfileByUserId(user: User, userId: string) {
+    const usernameUserDoc = await this.usersRepository.findOneBy({
+      id: new ObjectId(userId),
+    });
+    const userConnection = await this.connectionService.findOneBy(user.id);
+    const userProfile = await this.usersRepository
+      .aggregate([
+        {
+          $match: {
+            id: new ObjectId(userId),
+          },
+        },
+        {
+          $lookup: {
+            from: 'posts',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'posts',
+          },
+        },
+        {
+          $project: {
+            isFollowing: {
+              $cond: {
+                if: {
+                  $in: [
+                    new ObjectId(usernameUserDoc.id),
+                    [
+                      ...userConnection.following.map(
+                        (u) => new ObjectId(u.userId),
+                      ),
+                    ],
+                  ],
+                },
+                then: true,
+                else: false,
+              },
+            },
+            isConnected: {
+              $cond: {
+                if: {
+                  $in: [
+                    new ObjectId(usernameUserDoc.id),
+                    [
+                      ...userConnection.connections.map(
+                        (u) => new ObjectId(u.userId),
+                      ),
+                    ],
+                  ],
+                },
+                then: true,
+                else: false,
+              },
+            },
+            first_name: 1,
+            last_name: 1,
+            username: 1,
+            avatar: 1,
+            posts: 1,
+            createdAt: 1,
+            title: 1,
+            country: 1,
+            state: 1,
+            city: 1,
+            location: 1,
+            isProfessional: 1,
+            isActive: 1,
+            dob: 1,
+            isOnline: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    if (userProfile.length === 0) {
+      throw new NotFoundException('User not found');
+    }
+
+    return { ...userProfile[0] };
+  }
 }

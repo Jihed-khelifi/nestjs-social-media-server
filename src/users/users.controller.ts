@@ -27,7 +27,7 @@ export class UsersController {
   constructor(
     private userService: UsersService,
     private themeService: ThemesService,
-  ) { }
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Put()
@@ -133,16 +133,22 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-
   @Get('getUserProfileByUsername/:username')
   async getUser(@Request() req, @Param('username') username: string) {
     return this.userService.getUserProfileByUsername(req.user, username);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('getUserProfileByUserId/:userId')
+  async getUserProfileByUserId(
+    @Request() req,
+    @Param('userId') userId: string,
+  ) {
+    return this.userService.getUserProfileByUserId(req.user, userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('searchByUsername/:username')
   async searchByUsername(@Request() req, @Param('username') username: string) {
     return this.userService.searchByUsername(req.user, username);
-
   }
 }

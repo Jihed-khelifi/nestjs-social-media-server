@@ -943,6 +943,12 @@ export class JournalsService {
         },
         {
           $project: {
+            date: {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$createdAt',
+              },
+            },
             emotions: 1,
             category: 1,
             description: 1,
@@ -1107,13 +1113,24 @@ export class JournalsService {
             comments: 1,
             isTriggering: 1,
             createdAt: 1,
+            type: 1,
+            date: 1,
           },
         },
         { $sort: { createdAt: -1 } },
         {
           $facet: {
             pageDetails: [{ $count: 'total' }, { $addFields: { page: page } }],
-            journals: [{ $skip: page * 10 }, { $limit: 10 }],
+            journals: [
+              { $skip: page * 10 },
+              { $limit: 10 },
+              {
+                $group: {
+                  _id: '$date',
+                  data: { $push: '$$ROOT' },
+                },
+              },
+            ],
           },
         },
         {
@@ -1125,7 +1142,7 @@ export class JournalsService {
       username: user.username,
       avatar: user.avatar,
       id: user.id,
-      posts,
+      ...(posts.length > 0 ? posts[0] : {}),
     };
   }
 

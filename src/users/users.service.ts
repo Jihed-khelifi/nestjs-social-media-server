@@ -93,6 +93,49 @@ export class UsersService {
     await this.sendOtp(user);
     return this.authService.login(user, true);
   }
+  async createSocialLoginUser(createUserDto: CreateUserDto) {
+    createUserDto.email = createUserDto.email.trim();
+    const userByUsername = await this.findByUsername(createUserDto.username);
+    const userByEmail = await this.findByEmail(createUserDto.email);
+    if (userByEmail || userByUsername) {
+      throw new HttpException('User already exists.', HttpStatus.UNAUTHORIZED);
+    }
+    const user = await this.usersRepository.save({
+      ...createUserDto,
+      isActive: true,
+    });
+    const theme = await this.themeService.createTheme(
+      {
+        accentColor: '#DDDDDD',
+        bgColor: '#FFFFFF',
+        borderColor: '#f2efea',
+        cardBackground: '#F9F9F9',
+        name: 'Continuem Default',
+        negativeColor: '#DD0000',
+        negativeTextColor: '#FFFFFF',
+        neutralColor: '#FFB329',
+        neutralTextColor: '#FFFFFF',
+        positiveColor: '#00B012',
+        positiveTextColor: '#FFFFFF',
+        primaryColor: '#804BC7',
+        primaryTextColor: '#404040',
+        routineTextColor: '#4D4D4D',
+        secondaryBackgroundColor: '#FFFFFF',
+        default: true,
+      },
+      user.id,
+    );
+    user.theme = theme._id;
+    const connection = await this.connectionService.createConnection({
+      userId: user.id,
+      followers: [],
+      following: [],
+      connections: [],
+    });
+    user.connection = connection.id;
+    await this.updateUser(user.id, { ...user });
+    return this.authService.login(user);
+  }
 
   async sendOtp(user) {
     const otp = randomstring.generate({ length: 6, charset: 'numeric' });

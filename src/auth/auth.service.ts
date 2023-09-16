@@ -48,7 +48,7 @@ export class AuthService {
       if (!user) {
         const firstName = faker.person.firstName();
         const lastName = faker.person.lastName();
-        user = await this.usersService.create({
+        user = await this.usersService.createSocialLoginUser({
           email: email,
           first_name: firstName,
           last_name: lastName,
@@ -89,7 +89,7 @@ export class AuthService {
       if (!user) {
         const firstName = faker.person.firstName();
         const lastName = faker.person.lastName();
-        user = await this.usersService.create({
+        user = await this.usersService.createSocialLoginUser({
           email: email,
           first_name: firstName,
           last_name: lastName,

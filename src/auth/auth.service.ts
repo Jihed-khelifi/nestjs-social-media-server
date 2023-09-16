@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
@@ -10,6 +10,7 @@ import axios from 'axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { ConfigEntity } from '../config.entity';
+import appleSignin from 'apple-signin-auth';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(ConfigEntity)
     private configEntityMongoRepository: MongoRepository<ConfigEntity>,
-  ) { }
+  ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
@@ -58,7 +59,7 @@ export class AuthService {
           state: '',
           city: '',
           professionalCode: '',
-          loggedInWith: "google"
+          loggedInWith: 'google',
         });
       }
       const payload = { email: user.email, sub: user.id };
@@ -81,19 +82,8 @@ export class AuthService {
     }
   }
   async validateAppleUser(idToken: string): Promise<any> {
-    let applePayload;
     try {
-      const response = await axios.get('https://appleid.apple.com/auth/keys');
-      const applePublicKeys = response.data.keys;
-      const header = jwt.decode(idToken, { complete: true }).header;
-      const kid = header.kid;
-      const applePublicKey = applePublicKeys.find((key) => key.kid === kid);
-      // Verify and decode the Apple ID token
-      applePayload = jwt.verify(idToken, applePublicKey, {
-        algorithms: ['RS256'],
-        issuer: 'https://appleid.apple.com',
-        audience: 'com.letspresscontinue.continuem-service-id',
-      });
+      const applePayload = await appleSignin.verifyIdToken(idToken);
       const email = applePayload['email'];
       let user: any = await this.usersService.findByEmail(email);
       if (!user) {
@@ -110,7 +100,7 @@ export class AuthService {
           state: '',
           city: '',
           professionalCode: '',
-          loggedInWith: "apple"
+          loggedInWith: 'apple',
         });
       }
       const payload = { email: user.email, sub: user.id };

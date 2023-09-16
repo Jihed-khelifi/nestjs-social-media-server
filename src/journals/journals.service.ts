@@ -284,7 +284,7 @@ export class JournalsService {
       .toArray();
   }
 
-  async getPostsForAdmin() {
+  async getPostsForAdmin(page: number) {
     return this.journalMongoRepository
       .aggregate([
         {
@@ -294,19 +294,14 @@ export class JournalsService {
         },
         {
           $project: {
-            date: {
-              $dateToString: {
-                format: '%Y-%m-%d',
-                date: '$createdAt',
-              },
-            },
             emotions: 1,
             category: 1,
             description: 1,
             type: 1,
-            status: 1,
             createdBy: 1,
+            status: 1,
             createdAt: 1,
+            isTriggering: 1,
           },
         },
         {
@@ -324,21 +319,19 @@ export class JournalsService {
             'user.activationKey': 0,
             'user.otp': 0,
             'user.otpSentAt': 0,
+            'user.location': 0,
             'user.isActive': 0,
+            'user.country': 0,
+            'user.state': 0,
+            'user.city': 0,
           },
         },
-        { $addFields: { currentDate: '$$NOW' } },
         {
           $lookup: {
             from: 'comments',
             localField: '_id',
             foreignField: 'postId',
             pipeline: [
-              {
-                $match: {
-                  commentId: null,
-                },
-              },
               {
                 $lookup: {
                   from: 'comments',
@@ -375,9 +368,25 @@ export class JournalsService {
                       $project: {
                         'user.password': 0,
                         'user.activationKey': 0,
-                        'user.isActive': 0,
-                        'user.otpSentAt': 0,
                         'user.otp': 0,
+                        'user.otpSentAt': 0,
+                        'user.location': 0,
+                        'user.isActive': 0,
+                        'user.country': 0,
+                        'user.state': 0,
+                        'user.city': 0,
+                      },
+                    },
+                    {
+                      $project: {
+                        username: '$user.username',
+                        avatar: '$user.avatar',
+                        postId: 1,
+                        commentId: 1,
+                        replies: 1,
+                        status: 1,
+                        comment: 1,
+                        mentions: 1,
                       },
                     },
                   ],
@@ -412,11 +421,14 @@ export class JournalsService {
               { $unwind: '$user' },
               {
                 $project: {
-                  'user.password': 0,
-                  'user.activationKey': 0,
-                  'user.otp': 0,
-                  'user.otpSentAt': 0,
-                  'user.isActive': 0,
+                  username: '$user.username',
+                  avatar: '$user.avatar',
+                  postId: 1,
+                  replies: 1,
+                  comment: 1,
+                  status: 1,
+                  mentions: 1,
+                  isTriggering: 1,
                 },
               },
               { $sort: { createdAt: -1 } },
@@ -425,27 +437,28 @@ export class JournalsService {
           },
         },
         {
-          $group: {
-            _id: '$date',
-            journals: {
-              $addToSet: {
-                emotions: '$emotions',
-                id: '$_id',
-                description: '$description',
-                type: '$type',
-                category: '$category',
-                createdBy: '$createdBy',
-                status: '$status',
-                user: '$user',
-                comments: '$comments',
-                createdAt: '$createdAt',
-                currentDate: '$currentDate',
-              },
-            },
+          $project: {
+            username: '$user.username',
+            avatar: '$user.avatar',
+            emotions: 1,
+            description: 1,
+            comments: 1,
+            isTriggering: 1,
+            status: 1,
+            createdAt: 1,
+            createdBy: 1,
           },
         },
-        { $project: { _id: 0, journals: 1, date: '$_id' } },
-        { $sort: { date: -1 } },
+        { $sort: { createdAt: -1 } },
+        {
+          $facet: {
+            pageDetails: [{ $count: 'total' }, { $addFields: { page: page } }],
+            journals: [{ $skip: page * 10 }, { $limit: 10 }],
+          },
+        },
+        {
+          $unwind: '$pageDetails',
+        },
       ])
       .toArray();
   }
@@ -718,6 +731,7 @@ export class JournalsService {
             type: 1,
             createdBy: 1,
             createdAt: 1,
+            isTriggering: 1,
           },
         },
         {
@@ -860,6 +874,7 @@ export class JournalsService {
                   replies: 1,
                   comment: 1,
                   mentions: 1,
+                  isTriggering: 1,
                 },
               },
               { $sort: { createdAt: -1 } },
@@ -929,11 +944,18 @@ export class JournalsService {
         },
         {
           $project: {
+            date: {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$createdAt',
+              },
+            },
             emotions: 1,
             category: 1,
             description: 1,
             type: 1,
             createdBy: 1,
+            isTriggering: 1,
             createdAt: 1,
           },
         },
@@ -1093,13 +1115,24 @@ export class JournalsService {
             comments: 1,
             isTriggering: 1,
             createdAt: 1,
+            type: 1,
+            date: 1,
           },
         },
         { $sort: { createdAt: -1 } },
         {
           $facet: {
             pageDetails: [{ $count: 'total' }, { $addFields: { page: page } }],
-            journals: [{ $skip: page * 10 }, { $limit: 10 }],
+            journals: [
+              { $skip: page * 10 },
+              { $limit: 10 },
+              {
+                $group: {
+                  _id: '$date',
+                  data: { $push: '$$ROOT' },
+                },
+              },
+            ],
           },
         },
         {
@@ -1111,7 +1144,7 @@ export class JournalsService {
       username: user.username,
       avatar: user.avatar,
       id: user.id,
-      posts,
+      ...(posts.length > 0 ? posts[0] : {}),
     };
   }
 

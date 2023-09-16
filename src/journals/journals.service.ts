@@ -954,6 +954,7 @@ export class JournalsService {
             description: 1,
             type: 1,
             createdBy: 1,
+            isTriggering: 1,
             createdAt: 1,
           },
         },

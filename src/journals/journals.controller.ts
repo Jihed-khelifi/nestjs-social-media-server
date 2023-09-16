@@ -74,8 +74,8 @@ export class JournalsController {
   }
   @UseGuards(AdminJwtAuthGuard)
   @Get('getPostsForAdmin')
-  async getPostsForAdmin() {
-    return this.journalsService.getPostsForAdmin();
+  async getPostsForAdmin(@Query('page') page = 0) {
+    return this.journalsService.getPostsForAdmin(page);
   }
 
   @UseGuards(OptionalJwtAuthGuard)

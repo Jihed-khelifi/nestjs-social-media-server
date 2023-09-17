@@ -141,7 +141,7 @@ export class UsersService {
     const otp = randomstring.generate({ length: 6, charset: 'numeric' });
     await this.emailService.sendOtpEmail(
       'welcome.html',
-      'Welcome to Continuem;',
+      'Continue - Verify Account',
       user,
       otp,
     );
@@ -151,7 +151,7 @@ export class UsersService {
     const otp = randomstring.generate({ length: 6, charset: 'numeric' });
     await this.emailService.sendOtpEmail(
       'change-password.html',
-      'Continuem; Password Change',
+      'Continue - Verify Account',
       user,
       otp,
     );

@@ -137,6 +137,14 @@ export class UsersController {
   async getUser(@Request() req, @Param('username') username: string) {
     return this.userService.getUserProfileByUsername(req.user, username);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('getUserProfileByUserId/:userId')
+  async getUserProfileByUserId(
+    @Request() req,
+    @Param('userId') userId: string,
+  ) {
+    return this.userService.getUserProfileByUserId(req.user, userId);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('searchByUsername/:username')

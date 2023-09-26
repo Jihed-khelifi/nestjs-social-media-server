@@ -1,4 +1,4 @@
-import { IsString, IsEmail } from "class-validator";
+import { IsString, IsEmail } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -19,7 +19,6 @@ export class CreateUserDto {
   @IsString()
   title: string;
 
-
   @IsString()
   country: string;
 
@@ -30,8 +29,7 @@ export class CreateUserDto {
   city: string;
 
   @IsString()
-  loggedInWith: string
-
+  loggedInWith: string;
 
   isProfessional?: boolean;
 

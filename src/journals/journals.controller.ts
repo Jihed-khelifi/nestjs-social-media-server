@@ -29,7 +29,7 @@ export class JournalsController {
   constructor(
     private readonly journalsService: JournalsService,
     private userService: UsersService,
-  ) { }
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -73,9 +73,9 @@ export class JournalsController {
     return this.journalsService.minePosts(user);
   }
   @UseGuards(AdminJwtAuthGuard)
-  @Get('getDeletedOrRemovedPosts')
-  async getDeletedPosts() {
-    return this.journalsService.getDeletedPosts();
+  @Get('getPostsForAdmin')
+  async getPostsForAdmin(@Query('page') page = 0) {
+    return this.journalsService.getPostsForAdmin(page);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -193,7 +193,19 @@ export class JournalsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('getConnectionsPosts/:type')
-  async getConnectionsPosts(@Request() req, @Param('type') type: string, @Query('page') page = 0,) {
+  async getConnectionsPosts(
+    @Request() req,
+    @Param('type') type: string,
+    @Query('page') page = 0,
+  ) {
     return this.journalsService.getCommunityPosts(req.user, type, page);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('getUserPublicPosts/:userId')
+  async getUserPublicPosts(
+    @Param('userId') userId: string,
+    @Query('page') page = 0,
+  ) {
+    return this.journalsService.getUserPublicPosts(userId, page);
   }
 }

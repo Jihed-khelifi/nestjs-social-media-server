@@ -176,7 +176,7 @@ export class UsersService {
   }
 
   async findByUsername(username: string): Promise<User> {
-    return this.usersRepository.findOneBy({ username });
+    return this.usersRepository.findOneBy({ username: { $regex: `^${username}`, $options: 'i' } });
   }
 
   async findByActivationKey(key: string): Promise<User> {
@@ -185,7 +185,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User> {
     return this.usersRepository.findOneBy({
-      email,
+      email: { $regex: `^${email}`, $options: 'i' },
     });
   }
 

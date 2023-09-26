@@ -75,7 +75,7 @@ export class ConnectionsService {
               as: 'follower',
             },
           },
-          
+
           {
             $unwind: {
               path: '$follower',
@@ -136,7 +136,7 @@ export class ConnectionsService {
             as: 'follower',
           },
         },
-        
+
         {
           $unwind: {
             path: '$follower',
@@ -221,7 +221,7 @@ export class ConnectionsService {
               as: 'followingUser',
             },
           },
-         
+
           {
             $unwind: {
               path: '$followingUser',
@@ -375,7 +375,7 @@ export class ConnectionsService {
               as: 'connectionUser',
             },
           },
-          
+
           {
             $unwind: {
               path: '$connectionUser',
@@ -473,7 +473,7 @@ export class ConnectionsService {
         userId: new ObjectId(userToFollowId),
       });
 
-    if (userToFollowConnectionDoc) {
+    if (userToFollowConnectionDoc && userToFollowConnectionDoc.followers) {
       for (const follower of userToFollowConnectionDoc.followers) {
         if (follower.userId.toString() === user.id.toString()) {
           return {

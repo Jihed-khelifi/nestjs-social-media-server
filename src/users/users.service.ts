@@ -60,6 +60,7 @@ export class UsersService {
     const user = await this.usersRepository.save({
       ...createUserDto,
       isActive: false,
+      uuid: uuidv4(),
     });
     const theme = await this.themeService.createTheme(
       {
@@ -104,6 +105,7 @@ export class UsersService {
     const user = await this.usersRepository.save({
       ...createUserDto,
       isActive: true,
+      uuid: uuidv4(),
     });
     const theme = await this.themeService.createTheme(
       {

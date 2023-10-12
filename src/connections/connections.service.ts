@@ -597,7 +597,7 @@ export class ConnectionsService {
       .updateOne({
         $pull: {
           followers: {
-            userId: new ObjectId(user.id),
+            userId: new ObjectId(supporterUserId),
           },
         },
       });

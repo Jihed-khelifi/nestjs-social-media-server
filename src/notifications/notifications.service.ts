@@ -9,6 +9,7 @@ import { JournalsService } from '../journals/journals.service';
 import { UsersService } from '../users/users.service';
 import { ObjectId } from 'mongodb';
 import { User } from 'src/users/entities/user.entity';
+import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 
 const ONESIGNAL_APP_ID = '92a64123-4fb9-4c5b-90eb-b789794f168d';
 const app_key_provider = {
@@ -25,6 +26,8 @@ export class NotificationsService {
     private journalsService: JournalsService,
     @InjectRepository(NotificationEntity)
     private notificationEntityMongoRepository: MongoRepository<NotificationEntity>,
+    @InjectRepository(BlockedUsersEntity)
+    private blockedUsersEntityMongoRepository: MongoRepository<BlockedUsersEntity>,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
   ) {
@@ -221,35 +224,52 @@ export class NotificationsService {
       .toArray();
   }
   public async getUserNotifications(user: User) {
+    const blockedUsers = [];
+    if (user.id) {
+      const blocked = await this.blockedUsersEntityMongoRepository.findBy({
+        $or: [{ blockedBy: user.id }],
+      });
+      for (const u of blocked) {
+        blockedUsers.push(u.blockedTo);
+      }
+    }
+    const pipelines = [
+      {
+        $match: {
+          userId: user.id,
+        },
+      },
+      {
+        $match: {
+          relatedUserId: {
+            $nin: blockedUsers,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'relatedUserId',
+          foreignField: '_id',
+          as: 'relatedUser',
+        },
+      },
+      { $unwind: '$relatedUser' },
+      {
+        $addFields: {
+          username: '$relatedUser.username',
+          avatar: '$relatedUser.avatar',
+        },
+      },
+      {
+        $project: {
+          relatedUser: 0,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ];
     return this.notificationEntityMongoRepository
-      .aggregate([
-        {
-          $match: {
-            userId: user.id,
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'relatedUserId',
-            foreignField: '_id',
-            as: 'relatedUser',
-          },
-        },
-        { $unwind: '$relatedUser' },
-        {
-          $addFields: {
-            username: '$relatedUser.username',
-            avatar: '$relatedUser.avatar',
-          },
-        },
-        {
-          $project: {
-            relatedUser: 0,
-          },
-        },
-        { $sort: { createdAt: -1 } },
-      ])
+      .aggregate(pipelines)
       .toArray();
   }
 
@@ -288,7 +308,7 @@ export class NotificationsService {
       await this.sendNotification(
         notification.notificationMessage,
         [post.createdBy.toString()],
-        { ...post },
+        { ...post, commentId, dataId },
       );
       await this.notificationEntityMongoRepository.save(notification);
     }
@@ -307,7 +327,7 @@ export class NotificationsService {
         await this.sendNotification(
           mentionNotification.notificationMessage,
           [mention.toString()],
-          { ...post },
+          { ...post, commentId, dataId },
         );
         await this.notificationEntityMongoRepository.save(mentionNotification);
       }
@@ -315,7 +335,7 @@ export class NotificationsService {
   }
 
   async createNewFollowerNotification(userId, followerId) {
-    const user = await this.usersService.findOne(userId);
+    const user = await this.usersService.findOne(followerId);
     const notification: any = {};
     notification.notificationMessage = `${user.username} is now supporting you`;
     notification.userId = userId;
@@ -325,14 +345,14 @@ export class NotificationsService {
     notification.type = 'NEW_FOLLOWER';
     await this.sendNotification(
       notification.notificationMessage,
-      [userId.toString()],
+      [followerId.toString()],
       followerId,
     );
     await this.notificationEntityMongoRepository.save(notification);
   }
 
   async createNewConnectionNotification(userId, userConnectionId) {
-    const user = await this.usersService.findOne(userId);
+    const user = await this.usersService.findOne(userConnectionId);
     const notification: any = {};
     notification.notificationMessage = `${user.username} is connected to you`;
     notification.userId = userId;
@@ -342,7 +362,7 @@ export class NotificationsService {
     notification.type = 'NEW_CONNECTION';
     await this.sendNotification(
       notification.notificationMessage,
-      [userId.toString()],
+      [userConnectionId.toString()],
       userConnectionId,
     );
     await this.notificationEntityMongoRepository.save(notification);

@@ -60,6 +60,7 @@ export class UsersService {
     const user = await this.usersRepository.save({
       ...createUserDto,
       isActive: false,
+      uuid: uuidv4(),
     });
     const theme = await this.themeService.createTheme(
       {
@@ -104,6 +105,7 @@ export class UsersService {
     const user = await this.usersRepository.save({
       ...createUserDto,
       isActive: true,
+      uuid: uuidv4(),
     });
     const theme = await this.themeService.createTheme(
       {
@@ -336,6 +338,10 @@ export class UsersService {
         blockedTo: new ObjectId(blockedTo),
       });
       await this.connectionService.unfollow(currentUser, blockedTo);
+      await this.connectionService.removeSupporter(
+        currentUser,
+        new ObjectId(blockedTo),
+      );
     }
   }
   async getBlockedUsers(user) {
@@ -360,6 +366,7 @@ export class UsersService {
             _id: 0,
             id: '$user._id',
             username: '$user.username',
+            avatar: '$user.avatar',
           },
         },
       ])

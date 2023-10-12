@@ -7,10 +7,11 @@ import { NotificationsController } from './notifications.controller';
 import { JournalsModule } from '../journals/journals.module';
 import { UsersModule } from '../users/users.module';
 import { ConnectionsModule } from 'src/connections/connections.module';
+import { BlockedUsersEntity } from '../users/entities/blocked_user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([NotificationEntity]),
+    TypeOrmModule.forFeature([NotificationEntity, BlockedUsersEntity]),
     forwardRef(() => JournalsModule),
     forwardRef(() => UsersModule),
     forwardRef(() => ConnectionsModule),

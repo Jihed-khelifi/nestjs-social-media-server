@@ -308,7 +308,7 @@ export class NotificationsService {
       await this.sendNotification(
         notification.notificationMessage,
         [post.createdBy.toString()],
-        { ...post },
+        { ...post, commentId, dataId },
       );
       await this.notificationEntityMongoRepository.save(notification);
     }
@@ -327,7 +327,7 @@ export class NotificationsService {
         await this.sendNotification(
           mentionNotification.notificationMessage,
           [mention.toString()],
-          { ...post },
+          { ...post, commentId, dataId },
         );
         await this.notificationEntityMongoRepository.save(mentionNotification);
       }

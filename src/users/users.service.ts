@@ -366,6 +366,7 @@ export class UsersService {
             _id: 0,
             id: '$user._id',
             username: '$user.username',
+            avatar: '$user.avatar',
           },
         },
       ])

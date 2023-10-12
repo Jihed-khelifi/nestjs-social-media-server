@@ -338,6 +338,10 @@ export class UsersService {
         blockedTo: new ObjectId(blockedTo),
       });
       await this.connectionService.unfollow(currentUser, blockedTo);
+      await this.connectionService.removeSupporter(
+        currentUser,
+        new ObjectId(blockedTo),
+      );
     }
   }
   async getBlockedUsers(user) {

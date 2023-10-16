@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { ReportDto } from './dto/report.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MongoRepository } from 'typeorm';
-import { ReportEntity } from './entities/report.entity';
-import { UsersService } from '../users/users.service';
-import { ObjectId } from 'mongodb';
+import { Injectable } from "@nestjs/common";
+import { ReportDto } from "./dto/report.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { MongoRepository } from "typeorm";
+import { ReportEntity } from "./entities/report.entity";
+import { ObjectId } from "mongodb";
 
 @Injectable()
 export class ReportService {
@@ -25,17 +24,15 @@ export class ReportService {
     });
   }
   async markStatus(dataId: string, status: string) {
-    const report = await this.reportEntityMongoRepository.findOne({
+    await this.reportEntityMongoRepository.update(
+      { dataId: new ObjectId(dataId) },
+      { status },
+    );
+    return await this.reportEntityMongoRepository.findOne({
       where: {
         dataId: new ObjectId(dataId),
       },
     });
-    report.status = status;
-    await this.reportEntityMongoRepository.update(
-      { id: report.id },
-      { ...report },
-    );
-    return report;
   }
   getAllReportedData() {
     return this.reportEntityMongoRepository

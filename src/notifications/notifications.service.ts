@@ -304,6 +304,7 @@ export class NotificationsService {
       notification.createdAt = new Date();
       notification.read = false;
       notification.dataId = postId;
+      notification.commentId = commentId;
       notification.type = 'MY_POST_COMMENT';
       await this.sendNotification(
         notification.notificationMessage,
